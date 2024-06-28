@@ -8,39 +8,50 @@
 </head>
 <body>
     <header>
+        <div class="logo">RYO SASA</div>
         <nav>
             <ul>
-                <li><a href="#home">HOME</a></li>
-                <li><a href="#about">ABOUT</a></li>
                 <li><a href="#works">WORKS</a></li>
+                <li><a href="#about">ABOUT</a></li>
                 <li><a href="#contact">CONTACT</a></li>
             </ul>
         </nav>
     </header>
 
     <main>
-        <section id="home" class="fade-in">
-            <h1>RYO SASA</h1>
+        <section id="hero">
+            <h1>CREATE<br>THE FUTURE</h1>
             <p>Web Developer & Designer</p>
         </section>
 
-        <section id="about" class="fade-in">
-            <h2>ABOUT</h2>
-            <p>ここに自己紹介文を入れます。</p>
-        </section>
-
-        <section id="works" class="fade-in">
+        <section id="works">
             <h2>WORKS</h2>
-            <div class="grid-container">
-                <div class="work-item">Project 1</div>
-                <div class="work-item">Project 2</div>
-                <div class="work-item">Project 3</div>
+            <div class="works-grid">
+                <div class="work-item">
+                    <img src="images/work1.jpg" alt="Work 1">
+                    <h3>Project Title 1</h3>
+                </div>
+                <div class="work-item">
+                    <img src="images/work2.jpg" alt="Work 2">
+                    <h3>Project Title 2</h3>
+                </div>
+                <!-- Add more work items as needed -->
             </div>
         </section>
 
-        <section id="contact" class="fade-in">
+        <section id="about">
+            <h2>ABOUT</h2>
+            <p>ここに自己紹介文を入れます。技術スキル、経験、ビジョンなどを記述します。</p>
+        </section>
+
+        <section id="contact">
             <h2>CONTACT</h2>
-            <p>Email: your.email@example.com</p>
+            <form>
+                <input type="text" placeholder="Name" required>
+                <input type="email" placeholder="Email" required>
+                <textarea placeholder="Message" required></textarea>
+                <button type="submit">Send</button>
+            </form>
         </section>
     </main>
 
