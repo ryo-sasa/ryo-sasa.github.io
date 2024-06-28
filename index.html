@@ -3,10 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>自分のサイト名</title>
+    <title>Ryo Sasa - Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>ようこそ、私のサイトへ</h1>
-    <p>ここにメインコンテンツを追加します。</p>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="#home">HOME</a></li>
+                <li><a href="#about">ABOUT</a></li>
+                <li><a href="#works">WORKS</a></li>
+                <li><a href="#contact">CONTACT</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="fade-in">
+            <h1>RYO SASA</h1>
+            <p>Web Developer & Designer</p>
+        </section>
+
+        <section id="about" class="fade-in">
+            <h2>ABOUT</h2>
+            <p>ここに自己紹介文を入れます。</p>
+        </section>
+
+        <section id="works" class="fade-in">
+            <h2>WORKS</h2>
+            <div class="grid-container">
+                <div class="work-item">Project 1</div>
+                <div class="work-item">Project 2</div>
+                <div class="work-item">Project 3</div>
+            </div>
+        </section>
+
+        <section id="contact" class="fade-in">
+            <h2>CONTACT</h2>
+            <p>Email: your.email@example.com</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Ryo Sasa. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>
