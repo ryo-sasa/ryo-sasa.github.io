@@ -1,0 +1,351 @@
+/* メインフォームコンテナ */
+.Form {
+    margin-top: 80px;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 720px;
+}
+@media screen and (max-width: 480px) {
+    .Form {
+        margin-top: 40px;
+    }
+}
+
+/* 各フォームアイテム */
+.Form-Item {
+    border-top: 1px solid #ddd;
+    padding-top: 24px;
+    padding-bottom: 24px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+@media screen and (max-width: 480px) {
+    .Form-Item {
+        padding-left: 14px;
+        padding-right: 14px;
+        padding-top: 16px;
+        padding-bottom: 16px;
+        flex-wrap: wrap;
+    }
+}
+/* 最後のアイテムの下線 */
+.Form-Item:nth-child(5) {
+    border-bottom: 1px solid #ddd;
+}
+
+/* ラベル関連 */
+.Form-Item-Label {
+    width: 100%;
+    max-width: 248px;
+    letter-spacing: 0.05em;
+    font-weight: bold;
+    font-size: 18px;
+}
+@media screen and (max-width: 480px) {
+    .Form-Item-Label {
+        max-width: inherit;
+        display: flex;
+        align-items: center;
+        font-size: 15px;
+    }
+}
+.Form-Item-Label.isMsg {
+    margin-top: 8px;
+    margin-bottom: auto;
+}
+@media screen and (max-width: 480px) {
+    .Form-Item-Label.isMsg {
+        margin-top: 0;
+    }
+}
+/* 必須ラベル */
+.Form-Item-Label-Required {
+    border-radius: 6px;
+    margin-right: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    width: 48px;
+    display: inline-block;
+    text-align: center;
+    background: #008876;
+    color: #fff;
+    font-size: 14px;
+}
+@media screen and (max-width: 480px) {
+    .Form-Item-Label-Required {
+        border-radius: 4px;
+        padding-top: 4px;
+        padding-bottom: 4px;
+        width: 32px;
+        font-size: 10px;
+    }
+}
+
+/* 入力欄 */
+.Form-Item-Input {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-left: 40px;
+    padding-left: 1em;
+    padding-right: 1em;
+    height: 48px;
+    flex: 1;
+    width: 100%;
+    max-width: 410px;
+    background: #eaedf2;
+    font-size: 18px;
+}
+@media screen and (max-width: 480px) {
+    .Form-Item-Input {
+        margin-left: 0;
+        margin-top: 18px;
+        height: 40px;
+        flex: inherit;
+        font-size: 15px;
+    }
+}
+/* 右側コンテナ */
+.Form-Item-Right {
+    display: flex;
+    align-items: center;  /* 入力欄と small を縦中央揃え */
+    gap: 8px;             /* 要素間の余白（CSS gap が使えない場合は margin-left などで代用） */
+}
+
+
+/* テキストエリア */
+.Form-Item-Textarea {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-left: 40px;
+    padding-left: 1em;
+    padding-right: 1em;
+    height: 216px;
+    flex: 1;
+    width: 100%;
+    max-width: 410px;
+    background: #eaedf2;
+    font-size: 18px;
+}
+@media screen and (max-width: 480px) {
+    .Form-Item-Textarea {
+        margin-top: 18px;
+        margin-left: 0;
+        height: 200px;
+        flex: inherit;
+        font-size: 15px;
+    }
+}
+
+.Form-Item small {
+    display: block; /* 改行させる */
+    margin-top: 4px; /* 必要に応じて間隔調整 */
+    color: gray;
+}
+
+/* フォーム送信ボタン */
+.Form-Btn {
+    border-radius: 6px;
+    margin-top: 32px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    width: 280px;
+    display: block;
+    letter-spacing: 0.05em;
+    background: #5bc8ac;
+    color: #fff;
+    font-weight: bold;
+    font-size: 20px;
+}
+@media screen and (max-width: 480px) {
+    .Form-Btn {
+        margin-top: 24px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        width: 160px;
+        font-size: 16px;
+    }
+}
+
+/* =======================
+ボタンのスタイル 
+======================= */
+button {
+    display: inline-block;
+    font-size: 18px;
+    padding: 14px 25px;
+    border: none;
+    border-radius: 10px;
+    background-color: #008877;
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.5s;
+}
+button:hover {
+    background-color: #006f65;
+    transform: translateY(-5px);
+}
+button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+#registerButton {
+    display: block;
+    font-size: 18px;
+    padding: 14px 25px;
+    border: none;
+    border-radius: 10px;
+    background-color: #008877;
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.5s;
+    margin: 20px auto;
+    text-align: center;
+}
+#registerButton:hover {
+    background-color: #006f65;
+    transform: translateY(-5px);
+}
+#registerButton:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* =======================
+メッセージのスタイル 
+======================= */
+#emailError, 
+#otpError {
+    color: red;
+    font-size: 14px;
+}
+#otpSuccess {
+    color: #008877;
+    font-size: 14px;
+}
+#otpSection {
+    margin-top: 20px;
+}
+
+/* =======================
+入力チェックのスタイル 
+======================= */
+input:focus,
+select:focus {
+    border-color: #008877;
+    box-shadow: 0 0 5px #008877;
+}
+input.completed,
+select.completed {
+    border-color: #008877;
+    box-shadow: 0 0 5px #008877;
+}
+
+/* =======================
+タイトル 
+======================= */
+h2 {
+    padding: 0.5em;
+    color: #000000;
+    background: #f8f8f8;
+    border-left: solid 10px #008877;
+}
+
+fieldset {
+    margin: 80px auto; /* フィールドセット自体の外側余白 */
+    max-width: 720px;
+    padding: 24px 40px; /* 内側の上下24px, 左右40px */
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #fafafa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* legend のデフォルト余白をリセット */
+legend {
+    border-left: solid 10px #008877;
+    font-size: 25px;
+    font-weight: bold;
+    color: #008877;
+    background-color: #fafafa;
+    border-bottom: 1px solid #ddd;
+
+    /* ↓ ここでマージンを調整して余白を減らす ↓ */
+    margin-bottom: 10px; 
+    padding: 0 10px; 
+}
+
+/* 注意書きの装飾 */
+.exclusion-note {
+    color: #a00;
+    background-color: #ffe6e6;
+    border: 1px solid #ffcccc;
+    font-weight: bold;
+    border-radius: 4px;
+    text-align: center;
+
+    /* ↓ marginを小さくすると legend との間隔が詰まる ↓ */
+    margin-top: 8px;  
+    margin-bottom: 10px;
+    padding: 8px;
+}
+
+/* モバイル用調整 */
+@media screen and (max-width: 480px) {
+    fieldset {
+        margin-top: 40px;
+        padding: 16px 20px; 
+    }
+    legend {
+        font-size: 15px;
+    }
+}
+
+/* テーブル全体のスタイル */
+.Table {
+    width: 100%;
+    margin-top: 10px;        /* テーブル上部の余白 */
+    border-collapse: collapse;
+    border: 1px solid #ddd;  /* 全体の外枠 */
+  }
+  
+  /* テーブル見出し（th）とセル（td）の共通スタイル */
+  .Table th,
+  .Table td {
+    border: 1px solid #ddd;  /* セルの枠線 */
+    padding: 8px;            /* セル内の余白 */
+    vertical-align: middle;  /* 縦方向の中央寄せ */
+  }
+  
+  /* テーブル見出し（th）の個別スタイル */
+  .Table th {
+    background-color: #f8f8f8; /* 見出し部分の背景色 */
+    color: #000;               /* 見出しの文字色 */
+    font-weight: bold;         /* 見出しの文字を太字 */
+    text-align: center;        /* 見出しの文字を中央寄せ */
+  }
+  
+  /* 行にホバーしたときの背景変化（任意） */
+  .Table tbody tr:hover {
+    background-color: #f9f9f9;
+  }
+  
+  /* スマホ等の小画面向け調整 */
+  @media screen and (max-width: 480px) {
+    .Table {
+      /* 必要に応じてテーブル幅や余白を再調整 */
+      margin-top: 8px;
+    }
+    .Table th,
+    .Table td {
+      padding: 6px;
+      font-size: 14px;
+    }
+  }
+
+.form-check {
+    margin-bottom: 8px; /* 各チェックボックスの間に余白を追加 */
+}
