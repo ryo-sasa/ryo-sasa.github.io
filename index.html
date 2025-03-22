@@ -2,7 +2,7 @@
 <meta name=”viewport” content=”width=device-width, initial-scale=1″>
 <html lang="ja">
 <script src="brushup.js"></script>
-<link rel="stylesheet" href="brushup.css">
+<link rel="stylesheet" href="style.css">
 
 <head>
     <meta charset="utf-8"/>
@@ -19,7 +19,7 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
     <!-- 独自CSS -->
-    <link rel="stylesheet" href="brushup.css">
+    <link rel="stylesheet" href="style.css">
 
     <!-- ファビコン -->
     <link href="./../favicon.ico" rel="icon" type="image/x-icon"/>
@@ -37,1040 +37,1062 @@
     <meta name="description" content=""/>
 </head>
 
-<div class="Form">
-    <!-- hiden-field等 -->
-    <input id="status" name="status" type="hidden" value=""/>
-    <input id="is_open" name="is_open" type="hidden" value="1"/>
-    <input name="dummy_text_to_avoid_submitting_by_pushing_enter_key" style="position:absolute;visibility:hidden" type="text" />
+<form action="confirm.php" method="post">
+    <div class="Form">
+        <!-- hiden-field等 -->
+        <input id="status" name="status" type="hidden" value=""/>
+        <input id="is_open" name="is_open" type="hidden" value="1"/>
+        <input name="dummy_text_to_avoid_submitting_by_pushing_enter_key" style="position:absolute;visibility:hidden" type="text" />
 
-    <fieldset>
-        <legend>あなたについて</legend>
-        <!-- 氏名(漢字) -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>氏名(漢字)
-            </p>
-            <!-- 姓 -->
-            <input type="text" class="Form-Item-Input" placeholder="日本" id="name_1" name="name_1" autocomplete="family-name" required>
-            <!-- 名 -->
-            <input type="text" class="Form-Item-Input" placeholder="太郎" id="name_2" name="name_2" autocomplete="given-name" required>
-        </div>
-
-        <!-- 氏名(カナ) -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>氏名(カナ)
-            </p>
-            <!-- セイ -->
-            <input type="text" class="Form-Item-Input" placeholder="ﾆﾎﾝ" id="name_1_kana" name="name_1_kana" pattern="[ｦ-ﾟ\s]+" title="半角カタカナで入力してください" required oninput="this.value = toHalfWidthKana(this.value)">
-            <!-- メイ -->
-            <input type="text" class="Form-Item-Input" placeholder="ﾀﾛｳ" id="name_2_kana" name="name_2_kana" pattern="[ｦ-ﾟ\s]+" title="半角カタカナで入力してください" required oninput="this.value = toHalfWidthKana(this.value)">
-        </div>
-
-        <script>
-            function toHalfWidthKana(str) {
-            // 1. ひらがなを全角カタカナに変換する
-            //   （Unicode上で「ひらがな」(3040-309F)を「カタカナ」(30A0-30FF)へシフト）
-            str = str.replace(/[\u3041-\u3096]/g, function(match) {
-                // ひらがなのコードポイントをカタカナのコードポイントにシフト
-                const code = match.charCodeAt(0) + 0x60;
-                return String.fromCharCode(code);
-            });
-
-            // 2. 全角カタカナを半角カタカナに変換するマッピング
-            const kanaMap = {
-                'ガ': 'ｶﾞ', 'ギ': 'ｷﾞ', 'グ': 'ｸﾞ', 'ゲ': 'ｹﾞ', 'ゴ': 'ｺﾞ',
-                'ザ': 'ｻﾞ', 'ジ': 'ｼﾞ', 'ズ': 'ｽﾞ', 'ゼ': 'ｾﾞ', 'ゾ': 'ｿﾞ',
-                'ダ': 'ﾀﾞ', 'ヂ': 'ﾁﾞ', 'ヅ': 'ﾂﾞ', 'デ': 'ﾃﾞ', 'ド': 'ﾄﾞ',
-                'バ': 'ﾊﾞ', 'ビ': 'ﾋﾞ', 'ブ': 'ﾌﾞ', 'ベ': 'ﾍﾞ', 'ボ': 'ﾎﾞ',
-                'パ': 'ﾊﾟ', 'ピ': 'ﾋﾟ', 'プ': 'ﾌﾟ', 'ペ': 'ﾍﾟ', 'ポ': 'ﾎﾟ',
-                'ヴ': 'ｳﾞ', 'ッ': 'ｯ', 'ャ': 'ｬ', 'ュ': 'ｭ', 'ョ': 'ｮ',
-                'ァ': 'ｧ', 'ィ': 'ｨ', 'ゥ': 'ｩ', 'ェ': 'ｪ', 'ォ': 'ｫ',
-                'ー': 'ｰ', '。': '｡', '、': '､', '「': '｢', '」': '｣',
-                'ヲ': 'ｦ', 'ン': 'ﾝ', 'カ': 'ｶ', 'キ': 'ｷ', 'ク': 'ｸ', 
-                'ケ': 'ｹ', 'コ': 'ｺ', 'サ': 'ｻ', 'シ': 'ｼ', 'ス': 'ｽ', 
-                'セ': 'ｾ', 'ソ': 'ｿ', 'タ': 'ﾀ', 'チ': 'ﾁ', 'ツ': 'ﾂ', 
-                'テ': 'ﾃ', 'ト': 'ﾄ', 'ナ': 'ﾅ', 'ニ': 'ﾆ', 'ヌ': 'ﾇ', 
-                'ネ': 'ﾈ', 'ノ': 'ﾉ', 'ハ': 'ﾊ', 'ヒ': 'ﾋ', 'フ': 'ﾌ', 
-                'ヘ': 'ﾍ', 'ホ': 'ﾎ', 'マ': 'ﾏ', 'ミ': 'ﾐ', 'ム': 'ﾑ', 
-                'メ': 'ﾒ', 'モ': 'ﾓ', 'ヤ': 'ﾔ', 'ユ': 'ﾕ', 'ヨ': 'ﾖ', 
-                'ラ': 'ﾗ', 'リ': 'ﾘ', 'ル': 'ﾙ', 'レ': 'ﾚ', 'ロ': 'ﾛ', 
-                'ワ': 'ﾜ', 'ヰ': 'ｲ', 'ヱ': 'ｴ', 'ヮ': 'ﾜ', 'ア': 'ｱ', 
-                'イ': 'ｲ', 'ウ': 'ｳ', 'エ': 'ｴ', 'オ': 'ｵ'
-            };
-
-            // 3. 全角カタカナを半角カタカナに置換
-            return str.replace(/[\u30A1-\u30FF]/g, function(match) {
-                return kanaMap[match] || match; // 対応する変換があれば変換
-            });
-            }
-        </script>
-
-        <!-- 性別 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>性別
-            </p>
-            <select class="Form-Item-Input" id="sex" name="sex">
-                <option value="">--選択してください--</option>
-                <option value="男性">男性</option>
-                <option value="女性">女性</option>
-            </select>
-        </div>
-        
-        <!-- 生年月日 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>生年月日
-            </p>
-            <input type="date" class="Form-Item-Input" name="birthday" autocomplete="bday" required>
-        </div>
-
-        <!-- 郵便番号入力 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>郵便番号
-            </p>
-            <input
-                type="text"
-                class="Form-Item-Input"
-                id="address_num"
-                name="address_num"
-                maxlength="7"
-                placeholder="1130033"
-                autocomplete="postal-code"
-                wide="auto"
-                required
-            />
-            <small style="display: block; color: gray;">
-                ※郵便番号はハイフンなしの半角数字7桁
-            </small>
-        </div>
-        
-        <script>  
-        document.addEventListener("DOMContentLoaded", function () {
-            // 郵便番号検索処理を関数化
-            function searchPostalCode() {
-                const postalCode = document.getElementById("address_num").value.trim();
-                // 郵便番号のフォーマットチェック（半角数字7桁）
-                if (!/^\d{7}$/.test(postalCode)) {
-                alert("郵便番号は半角数字7桁で入力してください。");
-                return;
-                }
-
-                // 郵便番号検索APIを使用
-                const url = `https://zipcloud.ibsnet.co.jp/api/search?zipcode=${postalCode}`;
-                fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    // APIが正常に動作している場合（statusが200）のみ、結果チェック
-                    if (data.status === 200 && data.results && data.results.length > 0) {
-                    const result = data.results[0];
-                    document.getElementById("address_str").value = `${result.address1}${result.address2}${result.address3}`;
-                    } else {
-                    // 結果が存在しない場合、もしくは status が 200 以外の場合はアラートを表示
-                    alert(data.message || "該当する住所が見つかりませんでした。");
-                    document.getElementById("address_str").value = "";
-                    }
-                })
-                .catch(error => {
-                    console.error("エラーが発生しました:", error);
-                    alert("住所検索に失敗しました。時間をおいて再度お試しください。");
-                });
-            }
-
-            // 郵便番号の全角数字を半角に変換し、かつ7桁入力されたら自動検索
-            const addressNumInput = document.getElementById('address_num');
-            addressNumInput.addEventListener('input', function () {
-              // 全角数字→半角数字に変換
-                this.value = this.value.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
-        
-                // 入力文字数が7桁になったら自動で検索実行
-                if (this.value.length === 7) {
-                    searchPostalCode();
-                }
-            });
-        });
-        window.updateExamFieldsets = updateExamFieldsets;
-        </script>
-        
-
-        <!-- 住所入力 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>住所
-            </p>
-            <input
-                type="text"
-                class="Form-Item-Input"
-                id="address_str"
-                name="address_str"
-                placeholder="郵便番号を入力してください"
-            />
-        </div>
-
-        <!-- 建物名入力 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <!-- 任意なら「任意」表記に変更 -->
-                <span class="Form-Item-Label-Required">任意</span>建物名
-            </p>
-            <input
-                type="text"
-                class="Form-Item-Input"
-                id="address_str_building"
-                name="address_str_building"
-                placeholder="ナガセ本郷ビル７階"
-            />
-        </div>
-
-        
-        <!-- 電話番号(自宅) -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">選択必須</span>電話番号(自宅)
-            </p>
-            <input type="text" class="Form-Item-Input" placeholder="03-1234-5678" id="tel_home" name="tel_home" required>
-            <br>
-            <small style="color:gray;">※ハイフン区切り</small>
-        </div>
-
-        <script>
-            // 電話番号の全角数字と全角ハイフンを半角に変換し、
-            // 合計13文字以上の入力を防ぐ
-            document.getElementById('tel_home')?.addEventListener('input', function () {
-                // まずは全角→半角変換
-                let newVal = this.value
-                    .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
-                    .replace(/－/g, '-'); // 全角ハイフンを半角ハイフンに変換
-                // 入力値が12文字以上の場合は、11文字目までに切り詰める
-                if(newVal.length >= 13) {
-                    alert("電話番号は12文字まで入力可能です。");
-                    newVal = newVal.slice(0, 12);
-                }
-                this.value = newVal;
-            });
-        </script>
-
-
-        <!-- 電話番号(携帯) -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">選択必須</span>電話番号(携帯)
-            </p>
-            <input type="text" class="Form-Item-Input" placeholder="090-1234-5678" id="tel_mobile" name="tel_mobile" required>
-            <small style="color:gray; display:block;">※ハイフン区切り</small>
-        </div>
-
-        <script>
-            // 電話番号の全角数字と全角ハイフンを半角に変換し、
-            // 合計13文字以上の入力を防ぐ
-            document.getElementById('tel_mobile')?.addEventListener('input', function () {
-                // まずは全角→半角変換
-                let newVal = this.value
-                    .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
-                    .replace(/－/g, '-'); // 全角ハイフンを半角ハイフンに変換
-                // 入力値が13文字以上の場合は、11文字目までに切り詰める
-                if(newVal.length >= 14) {
-                    alert("電話番号は13文字まで入力可能です。");
-                    newVal = newVal.slice(0, 13);
-                }
-                this.value = newVal;
-            });
-        </script>
-    </fieldset>
-
-    <fieldset>
-        <legend>大学について</legend>
-        <div class="exclusion-note">
-            短期大学・専門学校在籍・卒業の方は対象外です。
-        </div>
-        <!-- 大学名 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>大学
-            </p>
-            <input
-                type="text"
-                class="Form-Item-Input"
-                placeholder="東京大学"
-                id="daigaku"
-                name="daigaku"
-                required
-            >
-            <small>※最後に「大学」と付けて入力してください。</small>
-        </div>
-
-        <!-- 学部 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>学部
-            </p>
-            <input type="text" class="Form-Item-Input" placeholder="理学部" id="gakubu" name="gakubu" required><br>
-            <small style="color:gray;">※最後に「学部」と付けて入力してください。</small>
-        </div>
-
-        <!-- 学科 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>学科
-            </p>
-            <input type="text" class="Form-Item-Input" placeholder="数学科" id="gakka" name="gakka" required>
-            <small style="color:gray;">※最後に「学科」と付けて入力してください。</small>
-        </div>
-
-        <!-- 大学入学月日 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>大学入学月日
-            </p>
-            <input type="date" class="Form-Item-Input" name="enter_univ">
-        </div>
-
-        <!-- 大学受験区分 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>大学受験区分
-            </p>
-            <select class="Form-Item-Input" id="daigaku_juken_kubun" name="daigaku_juken_kubun">
-                <option value="" selected>--選択してください--</option>
-                <option value="1">一般</option>
-                <option value="2">内部進学</option>
-                <option value="3">指定校推薦</option>
-                <option value="4">AO</option>
-                <option value="5">帰国子女</option>
-            </select>
-        </div>
-
-
-        <!-- 大学院名 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">進学者のみ</span>大学院
-            </p>
-            <input type="text" class="Form-Item-Input" placeholder="東京大学大学院" id="daigakuin" name="daigakuin" type="text" required>
-            <small style="color:gray;">※最後に「大学大学院」と付けて入力してください。</small>
-        </div>
-
-        <!-- 研究科 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">進学者のみ</span>研究科
-            </p>
-            <input type="text" class="Form-Item-Input" placeholder="理学系研究科" id="kenkyuuka" name="kenkyuuka" type="text" required>
-            <small style="color:gray;">※最後に「研究科」と付けて入力してください。</small>
-        </div>
-
-        <!-- 専攻 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">進学者のみ</span>専攻
-            </p>
-            <input type="text" class="Form-Item-Input" id="senkou"
-            name="senkou"
-            type="text"
-            placeholder="物理学専攻" required>
-            <small style="color:gray;">※最後に「専攻」と付けて入力してください。</small>
-        </div>
-
-        <!-- 学年 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>学年
-            </p>
-            <select class="Form-Item-Input" id="school_year" name="school_year" required>
-                <option value="">--選択してください--</option>
-                <option value="1">1年</option>
-                <option value="2">2年</option>
-                <option value="3">3年</option>
-                <option value="4">4年</option>
-                <option value="5">5年</option>
-                <option value="6">6年</option>
-                <option value="101">修士1</option>
-                <option value="102">修士2</option>
-                <option value="200">博士</option>
-                <option value="900">既卒</option>
-            </select>
-        </div>
-
-        <!-- 大学で所属している部活・サークル・団体 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">任意</span>大学で所属している部活・サークル・団体
-            </p>
-            <input type="text" class="Form-Item-Input" id="daigaku_org" name="daigaku_org" required>
-        </div>
-        
-    </fieldset>
-
-    <fieldset>
-        <legend>大学受験について</legend>
         <fieldset>
-            <legend>共通テスト等について</legend>       
+            <legend>あなたについて</legend>
+            <!-- 氏名(漢字) -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    氏名(漢字)
+                </p>
+                <!-- 姓 -->
+                <input type="text" class="Form-Item-Input" placeholder="東進" id="name_1" name="name_1" autocomplete="family-name" required>
+                <!-- 名 -->
+                <input type="text" class="Form-Item-Input" placeholder="太郎" id="name_2" name="name_2" autocomplete="given-name" required>
+            </div>
 
-        <div class="exclusion-note">
-            共通テストの科目・開示得点を入力してください。<br>
-            受験していない科目は「受験なし」を選択してください。<br>
-            業務のマッチングに利用しますので正確にご記入をお願いいたします。
-        </div>
-    
-        <!-- 試験名の選択 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>試験名
-            </p>
-            <select class="Form-Item-Input" id="exam_type" name="exam_type" required onchange="updateExamFieldsets()">
-                <option value="">--選択してください--</option>
-                <option value="center">センター試験(～2020)</option>
-                <option value="common_2024">共通テスト(2021～2024)</option>
-                <option value="common_2025">共通テスト(2025～)</option>
-            </select>
-        </div>
-    
-        <!-- 試験得点の入力エリア -->
-        <div class="Form-Item">
-        <p class="Form-Item-Label">
-            <span class="Form-Item-Label-Required">必須</span>得点入力
-        </p>
-        <div id="exam-fieldsets-container"></div>
-        </div>
-    
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-        // 各試験ごとの科目選択肢データ
-        const testOptions = {
-            center: {
-            foreign_language: ["英語(筆記)", "英語(リスニング)", "ドイツ語", "フランス語", "中国語", "韓国語", "受験なし"],
-            japanese: ["現代文", "古文", "漢文", "受験なし"],
-            math_1: ["数学Ⅰ", "数学Ⅰ・A", "受験なし"],
-            math_2: ["数学Ⅱ", "数学Ⅱ・B", "簿記・会計", "情報関係基礎", "受験なし"],
-            social_studies: ["世界史A", "世界史B", "日本史A", "日本史B", "地理A", "地理B", "現代社会", "倫理", "政治・経済", "倫理，政治・経済", "受験なし"],
-            science_1: ["物理基礎", "化学基礎", "生物基礎", "地学基礎", "受験なし"],
-            science_2: ["物理", "化学", "生物", "地学", "受験なし"],
-            information: ["受験なし"]
-            },
-            common_2024: {
-            foreign_language: ["英語リーディング", "英語リスニング", "ドイツ語", "フランス語", "中国語", "韓国語", "受験なし"],
-            japanese: ["現代文", "古文", "漢文", "受験なし"],
-            math_1: ["数学Ⅰ", "数学Ⅰ・A", "受験なし"],
-            math_2: ["数学Ⅱ", "数学Ⅱ・B", "簿記・会計", "情報関係基礎", "受験なし"],
-            social_studies: ["世界史A", "世界史B", "日本史A", "日本史B", "地理A", "地理B", "現代社会", "倫理", "政治・経済", "倫理，政治・経済", "受験なし"],
-            science_1: ["物理基礎", "化学基礎", "生物基礎", "地学基礎", "受験なし"],
-            science_2: ["物理", "化学", "生物", "地学", "受験なし"],
-            information: ["受験なし"]
-            },
-            common_2025: {
-            foreign_language: ["英語リーディング", "英語リスニング", "ドイツ語", "フランス語", "中国語", "韓国語", "受験なし"],
-            japanese: ["現代文", "古文", "漢文", "受験なし"],
-            math_1: ["数学Ⅰ", "数学Ⅰ・A", "受験なし"],
-            math_2: ["数学Ⅱ", "数学Ⅱ・B", "数学Ⅱ・B・C", "受験なし"],
-            social_studies: ["歴史総合，世界史探求", "歴史総合，日本史探求", "地理総合，地理探求", "公共，倫理", "公共，政治・経済", "受験なし"],
-            science_1: ["物理基礎", "化学基礎", "生物基礎", "地学基礎", "受験なし"],
-            science_2: ["物理", "化学", "生物", "地学", "受験なし"],
-            information: ["情報Ⅰ", "受験なし"]
-            }
-        };
-    
-        // 各科目キーに対応する表示名
-        const subjectDisplayNames = {
-            foreign_language: "外国語",
-            japanese: "国語",
-            math_1: "数学①",
-            math_2: "数学②",
-            social_studies: "地歴公民",
-            science_1: "理科①",
-            science_2: "理科②",
-            information: "情報"
-        };
-    
-        // 試験名の表示名
-        const examDisplayNames = {
-            center: "センター試験(～2020)",
-            common_2024: "共通テスト(2021～2024)",
-            common_2025: "共通テスト(2025～)"
-        };
-    
-        // 試験名選択に応じたフィールドセット群を生成する関数
-        function updateExamFieldsets() {
-            const examType = document.getElementById("exam_type").value;
-            const container = document.getElementById("exam-fieldsets-container");
-            container.innerHTML = ""; // 既存内容をクリア
-    
-            if (!examType || !testOptions[examType]) return;
-    
-            // 外側フィールドセット（試験全体）
-            const outerFieldset = document.createElement("fieldset");
-            outerFieldset.className = "exam-fieldset";
-            const outerLegend = document.createElement("legend");
-            outerLegend.textContent = examDisplayNames[examType] || examType;
-            outerFieldset.appendChild(outerLegend);
-    
-            // 各科目カテゴリーごとに内側フィールドセットを生成
-            const subjects = testOptions[examType];
-            for (const key in subjects) {
-            if (subjects.hasOwnProperty(key)) {
-                const subjectArray = subjects[key];
-                // 行数の設定：国語は3行、外国語、地歴公民、理科①、理科②は2行、その他は1行
-                let rowCount = 1;
-                if (key === "japanese") {
-                rowCount = 3;
-                } else if (["foreign_language", "social_studies", "science_1", "science_2"].includes(key)) {
-                rowCount = 2;
+            <!-- 氏名(カナ) -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    氏名(カナ)
+                </p>
+                <!-- セイ -->
+                <input type="text" class="Form-Item-Input" placeholder="ﾄｳｼﾝ" id="name_1_kana" name="name_1_kana" pattern="[ｦ-ﾟ\s]+" title="半角カタカナで入力してください" required oninput="this.value = toHalfWidthKana(this.value)">
+                <!-- メイ -->
+                <input type="text" class="Form-Item-Input" placeholder="ﾀﾛｳ" id="name_2_kana" name="name_2_kana" pattern="[ｦ-ﾟ\s]+" title="半角カタカナで入力してください" required oninput="this.value = toHalfWidthKana(this.value)">
+            </div>
+
+            <script>
+                function toHalfWidthKana(str) {
+                // 1. ひらがなを全角カタカナに変換する
+                //   （Unicode上で「ひらがな」(3040-309F)を「カタカナ」(30A0-30FF)へシフト）
+                str = str.replace(/[\u3041-\u3096]/g, function(match) {
+                    // ひらがなのコードポイントをカタカナのコードポイントにシフト
+                    const code = match.charCodeAt(0) + 0x60;
+                    return String.fromCharCode(code);
+                });
+
+                // 2. 全角カタカナを半角カタカナに変換するマッピング
+                const kanaMap = {
+                    'ガ': 'ｶﾞ', 'ギ': 'ｷﾞ', 'グ': 'ｸﾞ', 'ゲ': 'ｹﾞ', 'ゴ': 'ｺﾞ',
+                    'ザ': 'ｻﾞ', 'ジ': 'ｼﾞ', 'ズ': 'ｽﾞ', 'ゼ': 'ｾﾞ', 'ゾ': 'ｿﾞ',
+                    'ダ': 'ﾀﾞ', 'ヂ': 'ﾁﾞ', 'ヅ': 'ﾂﾞ', 'デ': 'ﾃﾞ', 'ド': 'ﾄﾞ',
+                    'バ': 'ﾊﾞ', 'ビ': 'ﾋﾞ', 'ブ': 'ﾌﾞ', 'ベ': 'ﾍﾞ', 'ボ': 'ﾎﾞ',
+                    'パ': 'ﾊﾟ', 'ピ': 'ﾋﾟ', 'プ': 'ﾌﾟ', 'ペ': 'ﾍﾟ', 'ポ': 'ﾎﾟ',
+                    'ヴ': 'ｳﾞ', 'ッ': 'ｯ', 'ャ': 'ｬ', 'ュ': 'ｭ', 'ョ': 'ｮ',
+                    'ァ': 'ｧ', 'ィ': 'ｨ', 'ゥ': 'ｩ', 'ェ': 'ｪ', 'ォ': 'ｫ',
+                    'ー': 'ｰ', '。': '｡', '、': '､', '「': '｢', '」': '｣',
+                    'ヲ': 'ｦ', 'ン': 'ﾝ', 'カ': 'ｶ', 'キ': 'ｷ', 'ク': 'ｸ', 
+                    'ケ': 'ｹ', 'コ': 'ｺ', 'サ': 'ｻ', 'シ': 'ｼ', 'ス': 'ｽ', 
+                    'セ': 'ｾ', 'ソ': 'ｿ', 'タ': 'ﾀ', 'チ': 'ﾁ', 'ツ': 'ﾂ', 
+                    'テ': 'ﾃ', 'ト': 'ﾄ', 'ナ': 'ﾅ', 'ニ': 'ﾆ', 'ヌ': 'ﾇ', 
+                    'ネ': 'ﾈ', 'ノ': 'ﾉ', 'ハ': 'ﾊ', 'ヒ': 'ﾋ', 'フ': 'ﾌ', 
+                    'ヘ': 'ﾍ', 'ホ': 'ﾎ', 'マ': 'ﾏ', 'ミ': 'ﾐ', 'ム': 'ﾑ', 
+                    'メ': 'ﾒ', 'モ': 'ﾓ', 'ヤ': 'ﾔ', 'ユ': 'ﾕ', 'ヨ': 'ﾖ', 
+                    'ラ': 'ﾗ', 'リ': 'ﾘ', 'ル': 'ﾙ', 'レ': 'ﾚ', 'ロ': 'ﾛ', 
+                    'ワ': 'ﾜ', 'ヰ': 'ｲ', 'ヱ': 'ｴ', 'ヮ': 'ﾜ', 'ア': 'ｱ', 
+                    'イ': 'ｲ', 'ウ': 'ｳ', 'エ': 'ｴ', 'オ': 'ｵ'
+                };
+
+                // 3. 全角カタカナを半角カタカナに置換
+                return str.replace(/[\u30A1-\u30FF]/g, function(match) {
+                    return kanaMap[match] || match; // 対応する変換があれば変換
+                });
                 }
-    
-                // 内側フィールドセット（各科目）
-                const innerFieldset = document.createElement("fieldset");
-                innerFieldset.className = "exam-subject-fieldset";
-                const innerLegend = document.createElement("legend");
-                innerLegend.textContent = subjectDisplayNames[key] || key;
-                innerFieldset.appendChild(innerLegend);
-    
-                // 指定行数分の入力行を生成
-                for (let i = 0; i < rowCount; i++) {
-                const rowDiv = document.createElement("div");
-                rowDiv.className = "Form-Item";
-    
-                // 科目選択用 select
-                const selectElem = document.createElement("select");
-                selectElem.className = "Form-Item-Input";
-                selectElem.name = key + "_subject_" + (i + 1);
-                const defaultOption = document.createElement("option");
-                defaultOption.value = "";
-                defaultOption.textContent = "--選択してください--";
-                selectElem.appendChild(defaultOption);
-                subjectArray.forEach(optText => {
+            </script>
+
+            <!-- 性別 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    性別
+                </p>
+                <select class="Form-Item-Input" id="sex" name="sex">
+                    <option value="">--選択してください--</option>
+                    <option value="男性">男性</option>
+                    <option value="女性">女性</option>
+                </select>
+            </div>
+            
+            <!-- 生年月日 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    生年月日
+                </p>
+                <input type="date" class="Form-Item-Input" name="birthday" autocomplete="bday" required>
+            </div>
+
+            <!-- 郵便番号入力 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    郵便番号
+                </p>
+                <input
+                    type="text"
+                    class="Form-Item-Input"
+                    id="address_num"
+                    name="address_num"
+                    maxlength="7"
+                    placeholder="1130033"
+                    autocomplete="postal-code"
+                    wide="auto"
+                    required
+                />
+                <small>
+                    ※郵便番号はハイフンなしの半角数字7桁
+                </small>
+            </div>
+            
+            <script>  
+            document.addEventListener("DOMContentLoaded", function () {
+                // 郵便番号検索処理を関数化
+                function searchPostalCode() {
+                    const postalCode = document.getElementById("address_num").value.trim();
+                    // 郵便番号のフォーマットチェック（半角数字7桁）
+                    if (!/^\d{7}$/.test(postalCode)) {
+                    alert("郵便番号は半角数字7桁で入力してください。");
+                    return;
+                    }
+
+                    // 郵便番号検索APIを使用
+                    const url = `https://zipcloud.ibsnet.co.jp/api/search?zipcode=${postalCode}`;
+                    fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        // APIが正常に動作している場合（statusが200）のみ、結果チェック
+                        if (data.status === 200 && data.results && data.results.length > 0) {
+                        const result = data.results[0];
+                        document.getElementById("address_str").value = `${result.address1}${result.address2}${result.address3}`;
+                        } else {
+                        // 結果が存在しない場合、もしくは status が 200 以外の場合はアラートを表示
+                        alert(data.message || "該当する住所が見つかりませんでした。");
+                        document.getElementById("address_str").value = "";
+                        }
+                    })
+                    .catch(error => {
+                        console.error("エラーが発生しました:", error);
+                        alert("住所検索に失敗しました。時間をおいて再度お試しください。");
+                    });
+                }
+
+                // 郵便番号の全角数字を半角に変換し、かつ7桁入力されたら自動検索
+                const addressNumInput = document.getElementById('address_num');
+                addressNumInput.addEventListener('input', function () {
+                // 全角数字→半角数字に変換
+                    this.value = this.value.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+            
+                    // 入力文字数が7桁になったら自動で検索実行
+                    if (this.value.length === 7) {
+                        searchPostalCode();
+                    }
+                });
+            });
+            window.updateExamFieldsets = updateExamFieldsets;
+            </script>
+            
+
+            <!-- 住所入力 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    住所
+                </p>
+                <input
+                    type="text"
+                    class="Form-Item-Input"
+                    id="address_str"
+                    name="address_str"
+                    placeholder="郵便番号を入力してください"
+                    required
+                />
+            </div>
+
+            <!-- 建物名入力 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    建物名
+                </p>
+                <input
+                    type="text"
+                    class="Form-Item-Input"
+                    id="address_str_building"
+                    name="address_str_building"
+                    placeholder="ナガセ本郷ビル７階"
+                />
+            </div>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    function toFullWidth(str) {
+                        return str.replace(/[0-9-]/g, function(s) {
+                            return String.fromCharCode(s.charCodeAt(0) + 65248);
+                        });
+                    }
+                
+                    function convertInputToFullWidth(event) {
+                        event.target.value = toFullWidth(event.target.value);
+                    }
+                
+                    document.getElementById("address_str").addEventListener("input", convertInputToFullWidth);
+                    document.getElementById("address_str_building").addEventListener("input", convertInputToFullWidth);
+                });
+            </script>
+            
+            <!-- 電話番号(自宅) -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    電話番号(自宅)
+                </p>
+                <input type="text" class="Form-Item-Input" placeholder="03-1234-5678" id="tel_home" name="tel_home">
+                <br>
+                <small style="color:gray;">※ハイフン区切り</small>
+            </div>
+
+            <script>
+                // 電話番号の全角数字と全角ハイフンを半角に変換し、
+                // 合計13文字以上の入力を防ぐ
+                document.getElementById('tel_home')?.addEventListener('input', function () {
+                    // まずは全角→半角変換
+                    let newVal = this.value
+                        .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+                        .replace(/－/g, '-'); // 全角ハイフンを半角ハイフンに変換
+                    // 入力値が12文字以上の場合は、11文字目までに切り詰める
+                    if(newVal.length >= 13) {
+                        alert("電話番号は12文字まで入力可能です。");
+                        newVal = newVal.slice(0, 12);
+                    }
+                    this.value = newVal;
+                });
+            </script>
+
+
+            <!-- 電話番号(携帯) -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    電話番号(携帯)
+                </p>
+                <input type="text" class="Form-Item-Input" placeholder="090-1234-5678" id="tel_mobile" name="tel_mobile" required>
+                <small style="color:gray; display:block;">※ハイフン区切り</small>
+            </div>
+
+            <script>
+                // 電話番号の全角数字と全角ハイフンを半角に変換し、
+                // 合計13文字以上の入力を防ぐ
+                document.getElementById('tel_mobile')?.addEventListener('input', function () {
+                    // まずは全角→半角変換
+                    let newVal = this.value
+                        .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+                        .replace(/－/g, '-'); // 全角ハイフンを半角ハイフンに変換
+                    // 入力値が13文字以上の場合は、11文字目までに切り詰める
+                    if(newVal.length >= 14) {
+                        alert("電話番号は13文字まで入力可能です。");
+                        newVal = newVal.slice(0, 13);
+                    }
+                    this.value = newVal;
+                });
+            </script>
+        </fieldset>
+
+        <fieldset>
+            <legend>大学について</legend>
+            <div class="exclusion-note">
+                短期大学・専門学校在籍・卒業の方は対象外です。
+            </div>
+            <!-- 大学名 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    大学
+                </p>
+                <input
+                    type="text"
+                    class="Form-Item-Input"
+                    placeholder="東京大学"
+                    id="daigaku"
+                    name="daigaku"
+                    required
+                >
+                <small>※最後に「大学」と付けて入力してください。</small>
+            </div>
+
+            <!-- 学部 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    学部
+                </p>
+                <input type="text" class="Form-Item-Input" placeholder="理学部" id="gakubu" name="gakubu" required><br>
+                <small style="color:gray;">※最後に「学部」と付けて入力してください。</small>
+            </div>
+
+            <!-- 学科 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    学科
+                </p>
+                <input type="text" class="Form-Item-Input" placeholder="数学科" id="gakka" name="gakka" required>
+                <small style="color:gray;">※最後に「学科」と付けて入力してください。</small>
+            </div>
+
+            <!-- 大学入学月日 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    大学入学月日
+                </p>
+                <input type="date" class="Form-Item-Input" name="enter_univ" required>
+            </div>
+
+            <!-- 大学受験区分 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    大学受験区分
+                </p>
+                <select class="Form-Item-Input" id="daigaku_juken_kubun" name="daigaku_juken_kubun" required>
+                    <option value="" selected>--選択してください--</option>
+                    <option value="1">一般</option>
+                    <option value="2">内部進学</option>
+                    <option value="3">指定校推薦</option>
+                    <option value="4">AO</option>
+                    <option value="5">帰国子女</option>
+                </select>
+            </div>
+
+
+            <!-- 大学院名 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    大学院
+                </p>
+                <input type="text" class="Form-Item-Input" placeholder="東京大学大学院" id="daigakuin" name="daigakuin" type="text">
+                <small style="color:gray;">※最後に「大学大学院」と付けて入力してください。</small>
+            </div>
+
+            <!-- 研究科 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    研究科
+                </p>
+                <input type="text" class="Form-Item-Input" placeholder="理学系研究科" id="kenkyuuka" name="kenkyuuka" type="text">
+                <small style="color:gray;">※最後に「研究科」と付けて入力してください。</small>
+            </div>
+
+            <!-- 専攻 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    専攻
+                </p>
+                <input
+                type="text"
+                class="Form-Item-Input"
+                id="senkou"
+                name="senkou"
+                type="text"
+                placeholder="物理学専攻"
+                >
+                <small style="color:gray;">※最後に「専攻」と付けて入力してください。</small>
+            </div>
+
+            <!-- 学年 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    学年
+                </p>
+                <select class="Form-Item-Input" id="school_year" name="school_year" required>
+                    <option value="">--選択してください--</option>
+                    <option value="1">1年</option>
+                    <option value="2">2年</option>
+                    <option value="3">3年</option>
+                    <option value="4">4年</option>
+                    <option value="5">5年</option>
+                    <option value="6">6年</option>
+                    <option value="101">修士1</option>
+                    <option value="102">修士2</option>
+                    <option value="200">博士</option>
+                    <option value="900">既卒</option>
+                </select>
+            </div>
+
+            <!-- 大学で所属している部活・サークル・団体 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    大学で所属している部活・サークル・団体
+                </p>
+                <input type="text" class="Form-Item-Input" id="daigaku_org" name="daigaku_org">
+            </div>
+            
+        </fieldset>
+
+        <fieldset>
+            <legend>大学受験について</legend>
+            <fieldset>
+                <legend>共通テスト等について</legend>       
+
+            <div class="exclusion-note">
+                共通テストの科目・開示得点を入力してください。<br>
+                受験していない科目は「受験なし」を選択してください。<br>
+                業務のマッチングに利用しますので正確にご記入をお願いいたします。
+            </div>
+        
+            <!-- 試験名の選択 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    試験名
+                </p>
+                <select class="Form-Item-Input" id="exam_type" name="exam_type" required onchange="updateExamFieldsets()">
+                    <option value="">--選択してください--</option>
+                    <option value="center">センター試験(～2020)</option>
+                    <option value="common_2024">共通テスト(2021～2024)</option>
+                    <option value="common_2025">共通テスト(2025～)</option>
+                </select>
+            </div>
+        
+            <!-- 試験得点の入力エリア -->
+            <div class="Form-Item">
+            <p class="Form-Item-Label">
+                得点入力
+            </p>
+            <div id="exam-fieldsets-container"></div>
+            </div>
+        
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+            // 各試験ごとの科目選択肢データ
+            const testOptions = {
+                center: {
+                foreign_language: ["英語(筆記)", "英語(リスニング)", "ドイツ語", "フランス語", "中国語", "韓国語", "受験なし"],
+                japanese: ["現代文", "古文", "漢文", "受験なし"],
+                math_1: ["数学Ⅰ", "数学Ⅰ・A", "受験なし"],
+                math_2: ["数学Ⅱ", "数学Ⅱ・B", "簿記・会計", "情報関係基礎", "受験なし"],
+                social_studies: ["世界史A", "世界史B", "日本史A", "日本史B", "地理A", "地理B", "現代社会", "倫理", "政治・経済", "倫理，政治・経済", "受験なし"],
+                science_1: ["物理基礎", "化学基礎", "生物基礎", "地学基礎", "受験なし"],
+                science_2: ["物理", "化学", "生物", "地学", "受験なし"],
+                information: ["受験なし"]
+                },
+                common_2024: {
+                foreign_language: ["英語リーディング", "英語リスニング", "ドイツ語", "フランス語", "中国語", "韓国語", "受験なし"],
+                japanese: ["現代文", "古文", "漢文", "受験なし"],
+                math_1: ["数学Ⅰ", "数学Ⅰ・A", "受験なし"],
+                math_2: ["数学Ⅱ", "数学Ⅱ・B", "簿記・会計", "情報関係基礎", "受験なし"],
+                social_studies: ["世界史A", "世界史B", "日本史A", "日本史B", "地理A", "地理B", "現代社会", "倫理", "政治・経済", "倫理，政治・経済", "受験なし"],
+                science_1: ["物理基礎", "化学基礎", "生物基礎", "地学基礎", "受験なし"],
+                science_2: ["物理", "化学", "生物", "地学", "受験なし"],
+                information: ["受験なし"]
+                },
+                common_2025: {
+                foreign_language: ["英語リーディング", "英語リスニング", "ドイツ語", "フランス語", "中国語", "韓国語", "受験なし"],
+                japanese: ["現代文", "古文", "漢文", "受験なし"],
+                math_1: ["数学Ⅰ", "数学Ⅰ・A", "受験なし"],
+                math_2: ["数学Ⅱ", "数学Ⅱ・B", "数学Ⅱ・B・C", "受験なし"],
+                social_studies: ["歴史総合，世界史探求", "歴史総合，日本史探求", "地理総合，地理探求", "公共，倫理", "公共，政治・経済", "受験なし"],
+                science_1: ["物理基礎", "化学基礎", "生物基礎", "地学基礎", "受験なし"],
+                science_2: ["物理", "化学", "生物", "地学", "受験なし"],
+                information: ["情報Ⅰ", "受験なし"]
+                }
+            };
+        
+            // 各科目キーに対応する表示名
+            const subjectDisplayNames = {
+                foreign_language: "外国語",
+                japanese: "国語",
+                math_1: "数学①",
+                math_2: "数学②",
+                social_studies: "地歴公民",
+                science_1: "理科①",
+                science_2: "理科②",
+                information: "情報"
+            };
+        
+            // 試験名の表示名
+            const examDisplayNames = {
+                center: "センター試験(～2020)",
+                common_2024: "共通テスト(2021～2024)",
+                common_2025: "共通テスト(2025～)"
+            };
+        
+            // 試験名選択に応じたフィールドセット群を生成する関数
+            function updateExamFieldsets() {
+                const examType = document.getElementById("exam_type").value;
+                const container = document.getElementById("exam-fieldsets-container");
+                container.innerHTML = ""; // 既存内容をクリア
+        
+                if (!examType || !testOptions[examType]) return;
+        
+                // 外側フィールドセット（試験全体）
+                const outerFieldset = document.createElement("fieldset");
+                outerFieldset.className = "exam-fieldset";
+                const outerLegend = document.createElement("legend");
+                outerLegend.textContent = examDisplayNames[examType] || examType;
+                outerFieldset.appendChild(outerLegend);
+        
+                // 各科目カテゴリーごとに内側フィールドセットを生成
+                const subjects = testOptions[examType];
+                for (const key in subjects) {
+                if (subjects.hasOwnProperty(key)) {
+                    const subjectArray = subjects[key];
+                    // 行数の設定：国語は3行、外国語、地歴公民、理科①、理科②は2行、その他は1行
+                    let rowCount = 1;
+                    if (key === "japanese") {
+                    rowCount = 3;
+                    } else if (["foreign_language", "social_studies", "science_1", "science_2"].includes(key)) {
+                    rowCount = 2;
+                    }
+        
+                    // 内側フィールドセット（各科目）
+                    const innerFieldset = document.createElement("fieldset");
+                    innerFieldset.className = "exam-subject-fieldset";
+                    const innerLegend = document.createElement("legend");
+                    innerLegend.textContent = subjectDisplayNames[key] || key;
+                    innerFieldset.appendChild(innerLegend);
+        
+                    // 指定行数分の入力行を生成
+                    for (let i = 0; i < rowCount; i++) {
+                    const rowDiv = document.createElement("div");
+                    rowDiv.className = "Form-Item";
+        
+                    // 科目選択用 select
+                    const selectElem = document.createElement("select");
+                    selectElem.className = "Form-Item-Input";
+                    selectElem.name = key + "_subject_" + (i + 1);
+                    const defaultOption = document.createElement("option");
+                    defaultOption.value = "";
+                    defaultOption.textContent = "--選択してください--";
+                    selectElem.appendChild(defaultOption);
+                    subjectArray.forEach(optText => {
+                        const opt = document.createElement("option");
+                        opt.value = optText;
+                        opt.textContent = optText;
+                        selectElem.appendChild(opt);
+                    });
+                    selectElem.addEventListener("change", function() {
+                        toggleScoreInput(this, key + "_score_" + (i + 1));
+                    });
+                    rowDiv.appendChild(selectElem);
+        
+                    // 得点入力欄
+                    const scoreInput = document.createElement("input");
+                    scoreInput.type = "number";
+                    scoreInput.className = "Form-Item-Input score-input";
+                    scoreInput.name = key + "_score_" + (i + 1);
+                    scoreInput.id = key + "_score_" + (i + 1);
+                    scoreInput.placeholder = "得点（不明の場合は空欄）";
+                    scoreInput.min = "0";
+                    scoreInput.style.width = "100%";
+                    scoreInput.style.display = "none"; // 初期は非表示
+                    scoreInput.addEventListener("change", function() {
+                        validateScoreInput(this);
+                    });
+                    rowDiv.appendChild(scoreInput);
+        
+                    innerFieldset.appendChild(rowDiv);
+                    }
+                    outerFieldset.appendChild(innerFieldset);
+                }
+                }
+                container.appendChild(outerFieldset);
+            }
+        
+            // 得点入力欄の表示切替（選択が「受験なし」以外の場合は表示）
+            function toggleScoreInput(select, inputId) {
+                const input = document.getElementById(inputId);
+                if (!input) return;
+                input.style.display = (select.value && select.value !== "受験なし") ? "block" : "none";
+            }
+        
+            // 得点入力欄のバリデーション
+            function validateScoreInput(inputElement) {
+                if (inputElement.value < 0) {
+                inputElement.value = 0;
+                }
+                inputElement.value = inputElement.value.replace(/^0+(\d+)/, '$1');
+            }
+        
+            window.updateExamFieldsets = updateExamFieldsets;
+            });
+        </script>
+            </fieldset>
+
+            <!-- 二次試験 --> 
+            <fieldset>
+                <legend>二次試験について</legend>
+                <div class="exclusion-note">
+                    二次試験（個別試験）で使用した教科・科目とその開示得点を記入してください。<br>
+                    「詳細な科目」は、主科目に対応している場合のみ表示され、得点は「受験なし」以外を選択した場合に入力してください。<br>
+                    末尾の行で科目を選択すると自動的に新しい行が追加されます。
+                </div>
+
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    二次試験得点
+                </p>
+            </div>
+
+            
+
+            <!-- 入力行を管理するコンテナ -->
+            <div id="second-test-container">
+                <!-- 初期行 -->
+                <div class="Subject-Row">
+                <!-- 左カラム：主科目ラベル（初期は空文字） -->
+                <p class="Subject-Label">科目</p>
+                <!-- 右カラム：主科目 select、詳細科目 select、得点入力欄 -->
+                <div class="Subject-Right">
+                    <select class="main-subject Form-Item-Input" name="main_subject_1">
+                    <option value="">--選択してください--</option>
+                    <option value="外国語">外国語</option>
+                    <option value="国語">国語</option>
+                    <option value="数学">数学</option>
+                    <option value="理科">理科</option>
+                    <option value="地歴公民">地歴公民</option>
+                    <option value="小論文">小論文</option>
+                    <option value="その他">その他</option>
+                    <option value="受験なし">受験なし</option>
+                    </select>
+                    <select class="sub-subject Form-Item-Input" name="sub_subject_1" style="display:none;">
+                    <option value="">--選択してください--</option>
+                    </select>
+                    <input type="number" class="score-input Form-Item-Input" name="score_input_1" placeholder="得点（不明の場合は空欄）" min="0" style="display:none;">
+                </div>
+                </div>
+            </div>
+            
+            
+            <script>
+            document.addEventListener("DOMContentLoaded", function() {
+            // 科目ごとの詳細科目データ
+            const subjectDetails = {
+                "外国語": ["英語", "その他"],
+                "国語": [],          // 詳細科目なし（国語は自由入力または直接得点入力）
+                "数学": [],
+                "理科": ["物理", "化学", "生物", "地学"],
+                "地歴公民": ["世界史", "日本史", "地理", "公民"],
+                "小論文": [],
+                "その他": ["総合問題", "英語資格/検定試験", "調査書", "実技", "その他"],
+                "受験なし": []
+            };
+            
+            // 主科目 select の onchange イベントで処理
+            function updateSecondTestRow(mainSelect) {
+                const row = mainSelect.closest(".Subject-Row");
+                const subSelect = row.querySelector(".sub-subject");
+                const scoreInput = row.querySelector(".score-input");
+                const selectedValue = mainSelect.value.trim();
+
+                // 更新：左側ラベルに主科目を反映
+                const label = row.querySelector(".Subject-Label");
+                label.textContent = selectedValue || "科目";
+
+                // 詳細科目のリセット
+                subSelect.innerHTML = '<option value="">--選択してください--</option>';
+                if (selectedValue && subjectDetails[selectedValue] && subjectDetails[selectedValue].length > 0) {
+                subjectDetails[selectedValue].forEach(detail => {
                     const opt = document.createElement("option");
-                    opt.value = optText;
-                    opt.textContent = optText;
-                    selectElem.appendChild(opt);
+                    opt.value = detail;
+                    opt.textContent = detail;
+                    subSelect.appendChild(opt);
                 });
-                selectElem.addEventListener("change", function() {
-                    toggleScoreInput(this, key + "_score_" + (i + 1));
+                subSelect.style.display = "inline-block";
+                scoreInput.style.display = "inline-block";
+                } else {
+                subSelect.style.display = "none";
+                subSelect.value = "";
+                scoreInput.style.display = (selectedValue === "受験なし" || selectedValue === "") ? "none" : "inline-block";
+                }
+
+                // 行が空になった場合、同一グループの空行が複数あるなら削除
+                if (selectedValue === "") {
+                removeEmptyRows();
+                }
+
+                // 末尾行なら新しい行を追加
+                addRowIfLast(row);
+            }
+
+            // 空状態（主科目が空）の行が複数ある場合、1行だけ残す
+            function removeEmptyRows() {
+                const container = document.getElementById("second-test-container");
+                const rows = container.querySelectorAll(".Subject-Row");
+                const emptyRows = [];
+                rows.forEach(row => {
+                const mainSelect = row.querySelector(".main-subject");
+                if (!mainSelect.value.trim()) {
+                    emptyRows.push(row);
+                }
                 });
-                rowDiv.appendChild(selectElem);
-    
-                // 得点入力欄
-                const scoreInput = document.createElement("input");
-                scoreInput.type = "number";
-                scoreInput.className = "Form-Item-Input score-input";
-                scoreInput.name = key + "_score_" + (i + 1);
-                scoreInput.id = key + "_score_" + (i + 1);
-                scoreInput.placeholder = "得点（不明の場合は空欄）";
-                scoreInput.min = "0";
-                scoreInput.style.width = "100%";
-                scoreInput.style.display = "none"; // 初期は非表示
-                scoreInput.addEventListener("change", function() {
+                // もし空行が2行以上あるなら、先頭1行以外を削除
+                if (emptyRows.length > 1) {
+                for (let i = 1; i < emptyRows.length; i++) {
+                    emptyRows[i].remove();
+                }
+                }
+            }
+            // 新しい行を追加する関数
+            function addRowIfLast(currentRow) {
+                const container = document.getElementById("second-test-container");
+                if (currentRow === container.lastElementChild) {
+                const newRow = currentRow.cloneNode(true);
+                // リセット
+                const mainSelect = newRow.querySelector(".main-subject");
+                const subSelect = newRow.querySelector(".sub-subject");
+                const scoreInput = newRow.querySelector(".score-input");
+                mainSelect.value = "";
+                subSelect.innerHTML = '<option value="">--選択してください--</option>';
+                subSelect.style.display = "none";
+                scoreInput.value = "";
+                scoreInput.style.display = "none";
+                // 左側ラベルリセット
+                newRow.querySelector(".Subject-Label").textContent = "科目";
+                // 再度イベントリスナーを付与
+                mainSelect.addEventListener("change", function() {
+                    updateSecondTestRow(this);
+                });
+                scoreInput.addEventListener("input", function() {
                     validateScoreInput(this);
                 });
-                rowDiv.appendChild(scoreInput);
-    
-                innerFieldset.appendChild(rowDiv);
+                container.appendChild(newRow);
                 }
-                outerFieldset.appendChild(innerFieldset);
             }
+            
+            // 得点入力欄のバリデーション
+            function validateScoreInput(inputElement) {
+                if (inputElement.value < 0) {
+                inputElement.value = 0;
+                }
+                inputElement.value = inputElement.value.replace(/^0+(\d+)/, '$1');
             }
-            container.appendChild(outerFieldset);
-        }
-    
-        // 得点入力欄の表示切替（選択が「受験なし」以外の場合は表示）
-        function toggleScoreInput(select, inputId) {
-            const input = document.getElementById(inputId);
-            if (!input) return;
-            input.style.display = (select.value && select.value !== "受験なし") ? "block" : "none";
-        }
-    
-        // 得点入力欄のバリデーション
-        function validateScoreInput(inputElement) {
-            if (inputElement.value < 0) {
-            inputElement.value = 0;
-            }
-            inputElement.value = inputElement.value.replace(/^0+(\d+)/, '$1');
-        }
-    
-        window.updateExamFieldsets = updateExamFieldsets;
-        });
-    </script>
-        </fieldset>
-
-        <!-- 二次試験 --> 
-        <fieldset>
-            <legend>二次試験について</legend>
-            <div class="exclusion-note">
-                二次試験（個別試験）で使用した教科・科目とその開示得点を記入してください。<br>
-                「詳細な科目」は、主科目に対応している場合のみ表示され、得点は「受験なし」以外を選択した場合に入力してください。<br>
-                末尾の行で科目を選択すると自動的に新しい行が追加されます。
-            </div>
-
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>二次試験得点
-            </p>
-        </div>
-
-        
-
-        <!-- 入力行を管理するコンテナ -->
-        <div id="second-test-container">
-            <!-- 初期行 -->
-            <div class="Subject-Row">
-            <!-- 左カラム：主科目ラベル（初期は空文字） -->
-            <p class="Subject-Label">科目</p>
-            <!-- 右カラム：主科目 select、詳細科目 select、得点入力欄 -->
-            <div class="Subject-Right">
-                <select class="main-subject Form-Item-Input" name="main_subject_1">
-                <option value="">--選択してください--</option>
-                <option value="外国語">外国語</option>
-                <option value="国語">国語</option>
-                <option value="数学">数学</option>
-                <option value="理科">理科</option>
-                <option value="地歴公民">地歴公民</option>
-                <option value="小論文">小論文</option>
-                <option value="その他">その他</option>
-                <option value="受験なし">受験なし</option>
-                </select>
-                <select class="sub-subject Form-Item-Input" name="sub_subject_1" style="display:none;">
-                <option value="">--選択してください--</option>
-                </select>
-                <input type="number" class="score-input Form-Item-Input" name="score_input_1" placeholder="得点（不明の場合は空欄）" min="0" style="display:none;">
-            </div>
-            </div>
-        </div>
-        
-        
-        <script>
-        document.addEventListener("DOMContentLoaded", function() {
-        // 科目ごとの詳細科目データ
-        const subjectDetails = {
-            "外国語": ["英語", "その他"],
-            "国語": [],          // 詳細科目なし（国語は自由入力または直接得点入力）
-            "数学": [],
-            "理科": ["物理", "化学", "生物", "地学"],
-            "地歴公民": ["世界史", "日本史", "地理", "公民"],
-            "小論文": [],
-            "その他": ["総合問題", "英語資格/検定試験", "調査書", "実技", "その他"],
-            "受験なし": []
-        };
-        
-        // 主科目 select の onchange イベントで処理
-        function updateSecondTestRow(mainSelect) {
-            const row = mainSelect.closest(".Subject-Row");
-            const subSelect = row.querySelector(".sub-subject");
-            const scoreInput = row.querySelector(".score-input");
-            const selectedValue = mainSelect.value.trim();
-
-            // 更新：左側ラベルに主科目を反映
-            const label = row.querySelector(".Subject-Label");
-            label.textContent = selectedValue || "科目";
-
-            // 詳細科目のリセット
-            subSelect.innerHTML = '<option value="">--選択してください--</option>';
-            if (selectedValue && subjectDetails[selectedValue] && subjectDetails[selectedValue].length > 0) {
-            subjectDetails[selectedValue].forEach(detail => {
-                const opt = document.createElement("option");
-                opt.value = detail;
-                opt.textContent = detail;
-                subSelect.appendChild(opt);
-            });
-            subSelect.style.display = "inline-block";
-            scoreInput.style.display = "inline-block";
-            } else {
-            subSelect.style.display = "none";
-            subSelect.value = "";
-            scoreInput.style.display = (selectedValue === "受験なし" || selectedValue === "") ? "none" : "inline-block";
-            }
-
-            // 行が空になった場合、同一グループの空行が複数あるなら削除
-            if (selectedValue === "") {
-            removeEmptyRows();
-            }
-
-            // 末尾行なら新しい行を追加
-            addRowIfLast(row);
-        }
-
-        // 空状態（主科目が空）の行が複数ある場合、1行だけ残す
-        function removeEmptyRows() {
-            const container = document.getElementById("second-test-container");
-            const rows = container.querySelectorAll(".Subject-Row");
-            const emptyRows = [];
-            rows.forEach(row => {
-            const mainSelect = row.querySelector(".main-subject");
-            if (!mainSelect.value.trim()) {
-                emptyRows.push(row);
-            }
-            });
-            // もし空行が2行以上あるなら、先頭1行以外を削除
-            if (emptyRows.length > 1) {
-            for (let i = 1; i < emptyRows.length; i++) {
-                emptyRows[i].remove();
-            }
-            }
-        }
-        // 新しい行を追加する関数
-        function addRowIfLast(currentRow) {
-            const container = document.getElementById("second-test-container");
-            if (currentRow === container.lastElementChild) {
-            const newRow = currentRow.cloneNode(true);
-            // リセット
-            const mainSelect = newRow.querySelector(".main-subject");
-            const subSelect = newRow.querySelector(".sub-subject");
-            const scoreInput = newRow.querySelector(".score-input");
-            mainSelect.value = "";
-            subSelect.innerHTML = '<option value="">--選択してください--</option>';
-            subSelect.style.display = "none";
-            scoreInput.value = "";
-            scoreInput.style.display = "none";
-            // 左側ラベルリセット
-            newRow.querySelector(".Subject-Label").textContent = "科目";
-            // 再度イベントリスナーを付与
-            mainSelect.addEventListener("change", function() {
+            
+            // 初期行のイベントリスナーを設定
+            const firstMainSelect = document.querySelector("#second-test-container .main-subject");
+            if (firstMainSelect) {
+                firstMainSelect.addEventListener("change", function() {
                 updateSecondTestRow(this);
-            });
-            scoreInput.addEventListener("input", function() {
+                });
+            }
+            const firstScoreInput = document.querySelector("#second-test-container .score-input");
+            if (firstScoreInput) {
+                firstScoreInput.addEventListener("input", function() {
                 validateScoreInput(this);
-            });
-            container.appendChild(newRow);
+                });
             }
-        }
-        
-        // 得点入力欄のバリデーション
-        function validateScoreInput(inputElement) {
-            if (inputElement.value < 0) {
-            inputElement.value = 0;
-            }
-            inputElement.value = inputElement.value.replace(/^0+(\d+)/, '$1');
-        }
-        
-        // 初期行のイベントリスナーを設定
-        const firstMainSelect = document.querySelector("#second-test-container .main-subject");
-        if (firstMainSelect) {
-            firstMainSelect.addEventListener("change", function() {
-            updateSecondTestRow(this);
             });
-        }
-        const firstScoreInput = document.querySelector("#second-test-container .score-input");
-        if (firstScoreInput) {
-            firstScoreInput.addEventListener("input", function() {
-            validateScoreInput(this);
-            });
-        }
-        });
-        </script>
-        </fieldset>
-        
-
-        <!-- 大学受験時の東進在籍歴（複数選択可） -->
-        <div class="Form-Item">            
-            <p class="Form-Item-Label">
-            <span class="Form-Item-Label-Required">必須</span>東進在籍歴(複数選択可)
-            </p>
-            <!-- ここでチェックボックス群を縦に並べるコンテナ -->
-            <div class="Form-Item-Right" style="flex-direction: column; align-items: flex-start;">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="daigaku_juken_toshin_zaisekireki_1" name="daigaku_juken_toshin_zaisekireki[]" value="1">
-                <label class="form-check-label" for="daigaku_juken_toshin_zaisekireki_1">東進ハイスクール</label>
-            </div>
+            </script>
+            </fieldset>
             
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="daigaku_juken_toshin_zaisekireki_2" name="daigaku_juken_toshin_zaisekireki[]" value="2">
-                <label class="form-check-label" for="daigaku_juken_toshin_zaisekireki_2">東進衛星予備校</label>
-            </div>
-            
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="daigaku_juken_toshin_zaisekireki_3" name="daigaku_juken_toshin_zaisekireki[]" value="3">
-                <label class="form-check-label" for="daigaku_juken_toshin_zaisekireki_3">東大特進</label>
-            </div>
-            
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="daigaku_juken_toshin_zaisekireki_9" name="daigaku_juken_toshin_zaisekireki[]" value="9">
-                <label class="form-check-label" for="daigaku_juken_toshin_zaisekireki_9">在籍なし</label>
-            </div>
-            
-            <small style="color: gray;">
-                複数の選択肢にチェックを入れることができます。
-            </small>
-            </div>
-        </div>
 
-        <!-- 通学していた校舎名（東進在籍有の方のみ） -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">対象者のみ</span>通学していた校舎名(東進在籍有の方のみ)
-            </p>
-            <input
-            type="text"
-            class="Form-Item-Input"
-            id="daigaku_juken_toshin_koushamei"
-            name="daigaku_juken_toshin_koushamei"
-            placeholder="例: ○○校"
-            >
-        </div>
-        
-        <!-- 大学受験時に東進以外で通学していた塾・予備校名 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">対象者のみ</span>大学受験時に東進以外で通学していた塾・予備校名
-            </p>
-            <input
-            type="text"
-            class="Form-Item-Input"
-            id="daigaku_juken_toshin_igai_jukumei"
-            name="daigaku_juken_toshin_igai_jukumei"
-            placeholder="例: ○○予備校"
-            >
-        </div>
-    </fieldset>
+            <!-- 大学受験時の東進在籍歴（複数選択可） -->
+            <div class="Form-Item">            
+                <p class="Form-Item-Label">
+                    東進在籍歴<br>(複数選択可)
+                </p>
+                <!-- ここでチェックボックス群を縦に並べるコンテナ -->
+                <div class="Form-Item-Right">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="daigaku_juken_toshin_zaisekireki_1" name="daigaku_juken_toshin_zaisekireki[]" value="1">
+                        <label class="form-check-label" for="daigaku_juken_toshin_zaisekireki_1">東進ハイスクール</label>
+                    </div>
+                
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="daigaku_juken_toshin_zaisekireki_2" name="daigaku_juken_toshin_zaisekireki[]" value="2">
+                        <label class="form-check-label" for="daigaku_juken_toshin_zaisekireki_2">東進衛星予備校</label>
+                    </div>
+                
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="daigaku_juken_toshin_zaisekireki_3" name="daigaku_juken_toshin_zaisekireki[]" value="3">
+                        <label class="form-check-label" for="daigaku_juken_toshin_zaisekireki_3">東大特進</label>
+                    </div>
+                
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="daigaku_juken_toshin_zaisekireki_9" name="daigaku_juken_toshin_zaisekireki[]" value="9">
+                        <label class="form-check-label" for="daigaku_juken_toshin_zaisekireki_9">在籍なし</label>
+                    </div>
+                
+                    <small style="color: gray;">
+                        ※複数の選択肢にチェックを入れることができます。
+                    </small>
+                </div>
+            </div>
 
-
-    <fieldset>
-        <legend>中高について</legend>
-        <!-- 出身高校 -->
-        <fieldset>
-            <legend>高校について</legend>
-
+            <!-- 通学していた校舎名（東進在籍有の方のみ） -->
             <div class="Form-Item">
                 <p class="Form-Item-Label">
-                    <span class="Form-Item-Label-Required">必須</span>都道府県
+                    通学していた校舎名(東進在籍有の方のみ)
                 </p>
-                <select class="Form-Item-Input" id="koukou_pref" name="koukou_pref" required>
-                    <option value="">--選択してください--</option>
-                    <optgroup label="北海道・東北">
-                        <option value="北海道">北海道</option>
-                        <option value="青森県">青森県</option>
-                        <option value="岩手県">岩手県</option>
-                        <option value="宮城県">宮城県</option>
-                        <option value="秋田県">秋田県</option>
-                        <option value="山形県">山形県</option>
-                        <option value="福島県">福島県</option>
-                    </optgroup>
-                    <optgroup label="関東">
-                        <option value="茨城県">茨城県</option>
-                        <option value="栃木県">栃木県</option>
-                        <option value="群馬県">群馬県</option>
-                        <option value="埼玉県">埼玉県</option>
-                        <option value="千葉県">千葉県</option>
-                        <option value="東京都">東京都</option>
-                        <option value="神奈川県">神奈川県</option>
-                    </optgroup>
-                    <optgroup label="中部">
-                        <option value="新潟県">新潟県</option>
-                        <option value="富山県">富山県</option>
-                        <option value="石川県">石川県</option>
-                        <option value="福井県">福井県</option>
-                        <option value="山梨県">山梨県</option>
-                        <option value="長野県">長野県</option>
-                        <option value="岐阜県">岐阜県</option>
-                        <option value="静岡県">静岡県</option>
-                        <option value="愛知県">愛知県</option>
-                    </optgroup>
-                    <optgroup label="近畿">
-                        <option value="三重県">三重県</option>
-                        <option value="滋賀県">滋賀県</option>
-                        <option value="京都府">京都府</option>
-                        <option value="大阪府">大阪府</option>
-                        <option value="兵庫県">兵庫県</option>
-                        <option value="奈良県">奈良県</option>
-                        <option value="和歌山県">和歌山県</option>
-                    </optgroup>
-                    <optgroup label="中国・四国">
-                        <option value="鳥取県">鳥取県</option>
-                        <option value="島根県">島根県</option>
-                        <option value="岡山県">岡山県</option>
-                        <option value="広島県">広島県</option>
-                        <option value="山口県">山口県</option>
-                        <option value="徳島県">徳島県</option>
-                        <option value="香川県">香川県</option>
-                        <option value="愛媛県">愛媛県</option>
-                        <option value="高知県">高知県</option>
-                    </optgroup>
-                    <optgroup label="九州・沖縄">
-                        <option value="福岡県">福岡県</option>
-                        <option value="佐賀県">佐賀県</option>
-                        <option value="長崎県">長崎県</option>
-                        <option value="熊本県">熊本県</option>
-                        <option value="大分県">大分県</option>
-                        <option value="宮崎県">宮崎県</option>
-                        <option value="鹿児島県">鹿児島県</option>
-                        <option value="沖縄県">沖縄県</option>
-                    </optgroup>
-                </select>
-            </div>
-
-            <div class="Form-Item">
-                <p class="Form-Item-Label">
-                    <span class="Form-Item-Label-Required">必須</span>区分
-                </p>
-                <select class="Form-Item-Input" id="koukou_pref2" name="koukou_pref2">
-                    <option value="">--選択してください--</option>
-                    <option value="国立">国立</option>
-                    <option value="公立">公立</option>
-                    <option value="私立">私立</option>
-                </select>
+                <input
+                type="text"
+                class="Form-Item-Input"
+                id="daigaku_juken_toshin_koushamei"
+                name="daigaku_juken_toshin_koushamei"
+                placeholder="例: ○○校"
+                >
             </div>
             
+            <!-- 大学受験時に東進以外で通学していた塾・予備校名 -->
             <div class="Form-Item">
                 <p class="Form-Item-Label">
-                    <span class="Form-Item-Label-Required">必須</span>校名
+                    大学受験時に東進以外で通学していた塾・予備校名
                 </p>
-                <input type="text" class="Form-Item-Input" id="koukou_name" name="koukou_name" placeholder="〇〇高校" required>
+                <input
+                type="text"
+                class="Form-Item-Input"
+                id="daigaku_juken_toshin_igai_jukumei"
+                name="daigaku_juken_toshin_igai_jukumei"
+                placeholder="例: ○○予備校"
+                >
             </div>
         </fieldset>
 
+
         <fieldset>
-            <legend>中学について</legend>
+            <legend>中高について</legend>
+            <!-- 出身高校 -->
+            <fieldset>
+                <legend>高校について</legend>
 
-            <!-- 出身中学 -->
-
-            <div class="Form-Item">
-                <p class="Form-Item-Label">
-                    <span class="Form-Item-Label-Required">必須</span>受験有無
-                </p>
-                <select class="Form-Item-Input" id="chugaku_juken_umu" name="chugaku_juken_umu">
-                    <option value="">--選択してください--</option>
-                    <option value="あり">受験した</option>
-                    <option value="なし">受験していない</option>
+                <div class="Form-Item">
+                    <p class="Form-Item-Label">
+                        都道府県
+                    </p>
+                    <select class="Form-Item-Input" id="koukou_pref" name="koukou_pref" required>
+                        <option value="">--選択してください--</option>
+                        <optgroup label="北海道・東北">
+                            <option value="北海道">北海道</option>
+                            <option value="青森県">青森県</option>
+                            <option value="岩手県">岩手県</option>
+                            <option value="宮城県">宮城県</option>
+                            <option value="秋田県">秋田県</option>
+                            <option value="山形県">山形県</option>
+                            <option value="福島県">福島県</option>
+                        </optgroup>
+                        <optgroup label="関東">
+                            <option value="茨城県">茨城県</option>
+                            <option value="栃木県">栃木県</option>
+                            <option value="群馬県">群馬県</option>
+                            <option value="埼玉県">埼玉県</option>
+                            <option value="千葉県">千葉県</option>
+                            <option value="東京都">東京都</option>
+                            <option value="神奈川県">神奈川県</option>
+                        </optgroup>
+                        <optgroup label="中部">
+                            <option value="新潟県">新潟県</option>
+                            <option value="富山県">富山県</option>
+                            <option value="石川県">石川県</option>
+                            <option value="福井県">福井県</option>
+                            <option value="山梨県">山梨県</option>
+                            <option value="長野県">長野県</option>
+                            <option value="岐阜県">岐阜県</option>
+                            <option value="静岡県">静岡県</option>
+                            <option value="愛知県">愛知県</option>
+                        </optgroup>
+                        <optgroup label="近畿">
+                            <option value="三重県">三重県</option>
+                            <option value="滋賀県">滋賀県</option>
+                            <option value="京都府">京都府</option>
+                            <option value="大阪府">大阪府</option>
+                            <option value="兵庫県">兵庫県</option>
+                            <option value="奈良県">奈良県</option>
+                            <option value="和歌山県">和歌山県</option>
+                        </optgroup>
+                        <optgroup label="中国・四国">
+                            <option value="鳥取県">鳥取県</option>
+                            <option value="島根県">島根県</option>
+                            <option value="岡山県">岡山県</option>
+                            <option value="広島県">広島県</option>
+                            <option value="山口県">山口県</option>
+                            <option value="徳島県">徳島県</option>
+                            <option value="香川県">香川県</option>
+                            <option value="愛媛県">愛媛県</option>
+                            <option value="高知県">高知県</option>
+                        </optgroup>
+                        <optgroup label="九州・沖縄">
+                            <option value="福岡県">福岡県</option>
+                            <option value="佐賀県">佐賀県</option>
+                            <option value="長崎県">長崎県</option>
+                            <option value="熊本県">熊本県</option>
+                            <option value="大分県">大分県</option>
+                            <option value="宮崎県">宮崎県</option>
+                            <option value="鹿児島県">鹿児島県</option>
+                            <option value="沖縄県">沖縄県</option>
+                        </optgroup>
                     </select>
+                </div>
+
+                <div class="Form-Item">
+                    <p class="Form-Item-Label">
+                        区分
+                    </p>
+                    <select class="Form-Item-Input" id="koukou_pref2" name="koukou_pref2" required>
+                        <option value="">--選択してください--</option>
+                        <option value="国立">国立</option>
+                        <option value="公立">公立</option>
+                        <option value="私立">私立</option>
+                    </select>
+                </div>
+                
+                <div class="Form-Item">
+                    <p class="Form-Item-Label">
+                        校名
+                    </p>
+                    <input type="text" class="Form-Item-Input" id="koukou_name" name="koukou_name" placeholder="〇〇高校" required>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>中学について</legend>
+
+                <!-- 出身中学 -->
+
+                <div class="Form-Item">
+                    <p class="Form-Item-Label">
+                        受験有無
+                    </p>
+                    <select class="Form-Item-Input" id="chugaku_juken_umu" name="chugaku_juken_umu" required>
+                        <option value="">--選択してください--</option>
+                        <option value="あり">受験した</option>
+                        <option value="なし">受験していない</option>
+                        </select>
+                </div>
+                
+                <div class="Form-Item">
+                    <p class="Form-Item-Label">
+                        出身中学
+                    </p>
+                    <input type="text" class="Form-Item-Input" id="chugaku_name" name="chugaku_name" placeholder="〇〇中学校" required>
+                </div>
+            </fieldset>
+
+        </fieldset>
+        
+        <fieldset>
+            <legend>教務力判定テスト受験希望科目選択について</legend>
+            <!-- 教務力判定テスト（受験希望科目） -->
+            <div class="exclusion-note">
+                受験を希望する科目を第1〜第3解答科目まで選択してください。<br>
+                試験では原則第1解答科目が割り振られ、合格した1科目で就業していただきます。
             </div>
-            
+            <div class="exclusion-note-cbt">
+                ※小論文での就業希望者は国語で受験するようお願いします。<br>
+                ※公民・地学での就業希望者はさしあたって他科目での受験をお願いします。<br>
+                ※数学は理系数学を、理科は基礎以降を含みますので履修済みの方のみ選択してください。
+            </div>
             <div class="Form-Item">
                 <p class="Form-Item-Label">
-                    <span class="Form-Item-Label-Required">必須</span>出身中学
+                    第1解答科目
                 </p>
-                <input type="text" class="Form-Item-Input" id="chugaku_name" name="chugaku_name" placeholder="〇〇中学校" required>
+                <select class="Form-Item-Input" name="answer_ability_test_subject_1" style="width: 100%;" required>
+                    <option value="">--選択してください--</option>
+                    <option value="英語">英語</option>
+                    <option value="国語">国語</option>
+                    <option value="数学">数学</option>
+                    <option value="世界史">世界史</option>
+                    <option value="日本史">日本史</option>
+                    <option value="地理">地理</option>
+                    <option value="物理">物理</option>
+                    <option value="化学">化学</option>
+                    <option value="生物">生物</option>
+                </select>
+            </div>
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    第2解答科目
+                </p>
+                <select class="Form-Item-Input" name="answer_ability_test_subject_2" style="width: 100%;">
+                    <option value="">--選択してください--</option>
+                    <option value="英語">英語</option>
+                    <option value="国語">国語</option>
+                    <option value="数学">数学</option>
+                    <option value="世界史">世界史</option>
+                    <option value="日本史">日本史</option>
+                    <option value="地理">地理</option>
+                    <option value="物理">物理</option>
+                    <option value="化学">化学</option>
+                    <option value="生物">生物</option>
+                </select>
+            </div>
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    第3解答科目
+                </p>
+                <select class="Form-Item-Input" name="answer_ability_test_subject_3" style="width: 100%;">
+                    <option value="">--選択してください--</option>
+                    <option value="英語">英語</option>
+                    <option value="国語">国語</option>
+                    <option value="数学">数学</option>
+                    <option value="世界史">世界史</option>
+                    <option value="日本史">日本史</option>
+                    <option value="地理">地理</option>
+                    <option value="物理">物理</option>
+                    <option value="化学">化学</option>
+                    <option value="生物">生物</option>
+                </select>
             </div>
         </fieldset>
 
-    </fieldset>
-    
-    <fieldset>
-        <legend>教務力判定テスト受験希望科目選択について</legend>
-        <!-- 教務力判定テスト（受験希望科目） -->
-        <div class="exclusion-note-cbt">
-            受験を希望する科目を第1〜第3解答科目まで選択してください。<br>
-            試験では原則第1解答科目が割り振られ、合格した1科目で就業していただきます。
-        </div>
-        <div class="exclusion-note">
-            ※小論文での就業希望者は国語で受験するようお願いします。<br>
-            公民・地学での就業希望者はさしあたって他科目での受験をお願いします。<br>
-            ※数学は理系数学を、理科は基礎以降を含みますので履修済みの方のみ選択してください。
-        </div>
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>第1解答科目
-            </p>
-            <select class="Form-Item-Input" name="answer_ability_test_subject_1" style="width: 100%;">
-                <option value="">--選択してください--</option>
-                <option value="英語">英語</option>
-                <option value="国語">国語</option>
-                <option value="数学">数学</option>
-                <option value="世界史">世界史</option>
-                <option value="日本史">日本史</option>
-                <option value="地理">地理</option>
-                <option value="物理">物理</option>
-                <option value="化学">化学</option>
-                <option value="生物">生物</option>
-            </select>
-        </div>
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>第2解答科目
-            </p>
-            <select class="Form-Item-Input" name="answer_ability_test_subject_2" style="width: 100%;">
-                <option value="">--選択してください--</option>
-                <option value="英語">英語</option>
-                <option value="国語">国語</option>
-                <option value="数学">数学</option>
-                <option value="世界史">世界史</option>
-                <option value="日本史">日本史</option>
-                <option value="地理">地理</option>
-                <option value="物理">物理</option>
-                <option value="化学">化学</option>
-                <option value="生物">生物</option>
-            </select>
-        </div>
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>第3解答科目
-            </p>
-            <select class="Form-Item-Input" name="answer_ability_test_subject_3" style="width: 100%;">
-                <option value="">--選択してください--</option>
-                <option value="英語">英語</option>
-                <option value="国語">国語</option>
-                <option value="数学">数学</option>
-                <option value="世界史">世界史</option>
-                <option value="日本史">日本史</option>
-                <option value="地理">地理</option>
-                <option value="物理">物理</option>
-                <option value="化学">化学</option>
-                <option value="生物">生物</option>
-            </select>
-        </div>
-    </fieldset>
-
-<!-- 下段の注意書き（赤字） -->
-<p style="color: red; font-weight: bold; margin-top: 10px;">
-    
-</p>
-
-    <fieldset>
-    <legend>自己PRおよび紹介者</legend>
-        <!-- 紹介者 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-            <span class="Form-Item-Label-Required">任意</span>紹介者
-            </p>
-            <div class="Form-Item-Right">
-            <select class="Form-Item-Input" id="introducer_select" name="introducer_select">
-                <option value="">--選択してください--</option>
-                <option value="toshin">東進HPより</option>
-                <option value="other">その他</option>
-            </select>
-            <input type="text" class="Form-Item-Input" id="introducer" name="introducer"
-                    placeholder="例: 知人の名前" style="display:none;">
-            <span id="introducer_note" style="color: gray; display:none;">
-                ※紹介者からの指定がある場合はその通りに入力してください。
-            </span>
-            </div>
-        </div>
-
-        <script>
-            // プルダウン選択時の動作
-            document.getElementById('introducer_select').addEventListener('change', function () {
-            const introducerInput = document.getElementById('introducer');
-            const introducerNote = document.getElementById('introducer_note');
-            if (this.value === 'other') {
-                introducerInput.style.display = 'block';
-                introducerNote.style.display = 'block';
-            } else {
-                introducerInput.style.display = 'none';
-                introducerInput.value = '';
-                introducerNote.style.display = 'none';
-            }
-            });
-
-            // 追加：入力欄からフォーカスが外れた際、空なら非表示にする（任意）
-            document.getElementById('introducer').addEventListener('blur', function() {
-            if (this.value.trim() === "") {
-                this.style.display = 'none';
-                document.getElementById('introducer_note').style.display = 'none';
-            }
-            });
-        </script>
-
-        <!-- 自由記述欄 -->
-        <div class="Form-Item">
-            <p class="Form-Item-Label">
-                <span class="Form-Item-Label-Required">必須</span>自由記入欄
-            </p>
-            <textarea class="Form-Item-Textarea" name="memo" placeholder="ご自由にご記入ください"></textarea>
-        </div>
-
+    <!-- 下段の注意書き（赤字） -->
+    <p style="color: red; font-weight: bold; margin-top: 10px;">
         
+    </p>
 
-    </fieldset>
+        <fieldset>
+        <legend>自己PRおよび紹介者</legend>
+            <!-- 紹介者 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    紹介者
+                </p>
+                <select class="Form-Item-Input" id="introducer_select" name="introducer_select">
+                    <option value="">--選択してください--</option>
+                    <option value="toshin">東進HPより</option>
+                    <option value="other">その他</option>
+                </select>
+                <input type="text" class="Form-Item-Input" id="introducer" name="introducer"
+                        placeholder="例: 知人の名前" style="display:none;">
+                <span id="introducer_note" style="color: gray; display:none;">
+                    ※紹介者からの指定がある場合はその通りに入力してください。
+                </span>
+            </div>
 
-    <!-- 送信ボタン -->
-    <div class="Form-Item">
-        <input type="submit" class="Form-Btn" value="送信する">
+            <script>
+                // プルダウン選択時の動作
+                document.getElementById('introducer_select').addEventListener('change', function () {
+                const introducerInput = document.getElementById('introducer');
+                const introducerNote = document.getElementById('introducer_note');
+                if (this.value === 'other') {
+                    introducerInput.style.display = 'block';
+                    introducerNote.style.display = 'block';
+                } else {
+                    introducerInput.style.display = 'none';
+                    introducerInput.value = '';
+                    introducerNote.style.display = 'none';
+                }
+                });
+
+                // 追加：入力欄からフォーカスが外れた際、空なら非表示にする（任意）
+                document.getElementById('introducer').addEventListener('blur', function() {
+                if (this.value.trim() === "") {
+                    this.style.display = 'none';
+                    document.getElementById('introducer_note').style.display = 'none';
+                }
+                });
+            </script>
+
+            <!-- 自由記述欄 -->
+            <div class="Form-Item">
+                <p class="Form-Item-Label">
+                    自由記入欄
+                </p>
+                <textarea class="Form-Item-Textarea" name="memo" placeholder="ご自由にご記入ください" required></textarea>
+            </div>
+
+            
+
+        </fieldset>
+
+        <!-- 送信ボタン -->
+        <div class="button-container">
+            <button class="submit-button" type="submit">
+                確認画面へ
+            </button>
+        </div>
     </div>
-</div>
+</form>
