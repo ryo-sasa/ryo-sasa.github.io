@@ -1,22 +1,23 @@
 {
-  "fetched_at": null,
+  "fetched_at": "2026-05-20T14:15:44+09:00",
   "jr": {
     "ok": false,
     "source": "https://traininfo.jreast.co.jp/train_info/line.aspx?gid=5&lineid=echigoline",
-    "status": "情報取得待ち",
+    "status": "取得失敗",
     "severity": "unknown",
     "updated_at": null,
-    "message": "GitHub Actions による初回の自動取得を待っています。"
+    "message": "JR東日本の運行情報を取得できませんでした: HTTP Error 403: Forbidden"
   },
   "bus": {
-    "ok": false,
+    "ok": true,
     "source": "https://www.niigata-kotsu.co.jp/~noriai/status/",
-    "status": "情報取得待ち",
-    "severity": "unknown",
+    "status": "大きな掲載なし",
+    "severity": "normal",
     "updated_at": null,
-    "message": "GitHub Actions による初回の自動取得を待っています。"
+    "message": "公式運行障害ページに路線別の大きな運休・遅れ掲載は見当たりません。道路渋滞による通常の遅れは掲載されない場合があります。"
   },
   "notes": [
-    "この JSON は GitHub Actions が15分ごとに自動更新します。"
+    "JR東日本の運行情報は30分以上の遅れ、または見込みが中心です。",
+    "新潟交通の公式運行情報は運休便や大幅な遅れが中心で、道路混雑による細かな遅れは掲載されない場合があります。"
   ]
 }
