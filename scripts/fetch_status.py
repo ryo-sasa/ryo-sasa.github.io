@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from datetime import datetime
 from html import unescape
 from pathlib import Path
@@ -21,21 +22,44 @@ ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "data" / "status.json"
 JST = ZoneInfo("Asia/Tokyo")
 
-JR_ECHIGO_URL = "https://traininfo.jreast.co.jp/train_info/line.aspx?gid=5&lineid=echigoline"
+# 越後線の運行情報は「信越エリア」のまとめページに掲載されている。
+# 旧 line.aspx の個別ページは構造が変わりやすいため、エリアページ内の
+# 越後線リンク（href に lineid=echigoline を含む <a>）から状態を読み取る。
+JR_AREA_URL = "https://traininfo.jreast.co.jp/train_info/shinetsu.aspx"
+JR_LINE_ID = "echigoline"  # 越後線
+JR_LINE_PAGE = (
+    "https://traininfo.jreast.co.jp/train_info/line.aspx?gid=5&lineid=echigoline"
+)
 NIIGATA_KOTSU_STATUS_URL = "https://www.niigata-kotsu.co.jp/~noriai/status/"
 
 
-def fetch_text(url: str, timeout: int = 10) -> str:
-    request = Request(
-        url,
-        headers={
-            "User-Agent": "niigata-rush-checker/1.0 (+github pages signage)",
-            "Accept-Language": "ja,en;q=0.8",
-        },
-    )
-    with urlopen(request, timeout=timeout) as response:
-        charset = response.headers.get_content_charset() or "utf-8"
-        return response.read().decode(charset, errors="replace")
+# 一般的なブラウザに近いヘッダー。素朴な User-Agent はボット判定で
+# 弾かれることがあるため、Chrome 相当の文字列を送る。
+BROWSER_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "ja,en-US;q=0.8,en;q=0.6",
+}
+
+
+def fetch_text(url: str, timeout: int = 12, retries: int = 2) -> str:
+    """URL を取得して本文テキストを返す。一時的な失敗に備えてリトライする。"""
+    last_exc: Exception = URLError("unknown error")
+    for attempt in range(retries + 1):
+        try:
+            request = Request(url, headers=BROWSER_HEADERS)
+            with urlopen(request, timeout=timeout) as response:
+                charset = response.headers.get_content_charset() or "utf-8"
+                return response.read().decode(charset, errors="replace")
+        except (TimeoutError, URLError, OSError) as exc:
+            last_exc = exc
+            if attempt < retries:
+                time.sleep(2)
+    raise last_exc
 
 
 def html_to_text(html: str) -> str:
@@ -47,51 +71,75 @@ def html_to_text(html: str) -> str:
 
 
 def parse_jr_status() -> dict:
+    """信越エリアの運行情報ページから越後線の状態を取得する。"""
     try:
-        line_text = html_to_text(fetch_text(JR_ECHIGO_URL))
+        html = fetch_text(JR_AREA_URL)
     except (TimeoutError, URLError, OSError) as exc:
         return {
             "ok": False,
-            "source": JR_ECHIGO_URL,
+            "source": JR_LINE_PAGE,
             "status": "取得失敗",
             "severity": "unknown",
             "updated_at": None,
             "message": f"JR東日本の運行情報を取得できませんでした: {exc}",
         }
 
+    full_text = html_to_text(html)
     updated_match = re.search(
-        r"(\d{4}年\d{1,2}月\d{1,2}日\s+\d{1,2}時\d{1,2}分\s+現在)", line_text
+        r"(\d{4}年\d{1,2}月\d{1,2}日\s*\d{1,2}時\d{1,2}分\s*現在)", full_text
     )
-    section = line_text
-    if "工事に伴う運転変更のお知らせ" in section:
-        section = section.split("工事に伴う運転変更のお知らせ", 1)[-1]
-    if "運行情報・運休情報" in section:
-        section = section.rsplit("運行情報・運休情報", 1)[-1]
-    if "遅延証明書は" in section:
-        section = section.split("遅延証明書は", 1)[0]
+    updated_at = updated_match.group(1) if updated_match else None
 
-    if "平常運転" in section:
+    # 越後線のステータスリンク（href に lineid=echigoline を含む <a>）を探す。
+    # リンクのテキストが「平常運転」「お知らせ 越後線は…」等そのまま状態を表す。
+    link_match = re.search(
+        r"<a\b[^>]*lineid=" + re.escape(JR_LINE_ID) + r"\b[^>]*>([\s\S]*?)</a>",
+        html,
+        flags=re.I,
+    )
+    if not link_match:
+        return {
+            "ok": False,
+            "source": JR_LINE_PAGE,
+            "status": "要確認",
+            "severity": "unknown",
+            "updated_at": updated_at,
+            "message": (
+                "JR運行情報ページの構造が変わった可能性があります。"
+                "公式ページで越後線の状況をご確認ください。"
+            ),
+        }
+
+    status_text = html_to_text(link_match.group(1))
+
+    # JR 東日本のラベル（先頭語）で重大度を判定する。
+    # お知らせ本文中に「運休」を含むことがあるため、必ず先頭語で見る。
+    if status_text.startswith("平常運転"):
         status, severity = "平常運転", "normal"
         message = "越後線は公式運行情報で平常運転です。"
-    elif "お知らせ" in section:
-        status, severity = "お知らせあり", "notice"
-        message = section[:260]
-    elif "遅延" in section:
+    elif status_text.startswith("運転見合わせ"):
+        status, severity = "運転見合わせ", "disrupted"
+        message = status_text[:260]
+    elif status_text.startswith("運休"):
+        status, severity = "運休情報あり", "disrupted"
+        message = status_text[:260]
+    elif status_text.startswith("遅延"):
         status, severity = "遅延", "delay"
-        message = section[:220]
-    elif "運転見合わせ" in section or "運休" in section:
-        status, severity = "運休・運転見合わせ情報あり", "disrupted"
-        message = section[:220]
+        message = status_text[:260]
+    elif status_text.startswith("お知らせ"):
+        status, severity = "お知らせあり", "notice"
+        body = status_text[len("お知らせ") :].strip()
+        message = (body or status_text)[:260]
     else:
         status, severity = "要確認", "unknown"
-        message = section[:220] or "状態を判定できませんでした。"
+        message = status_text[:260] or "状態を判定できませんでした。"
 
     return {
         "ok": True,
-        "source": JR_ECHIGO_URL,
+        "source": JR_LINE_PAGE,
         "status": status,
         "severity": severity,
-        "updated_at": updated_match.group(1) if updated_match else None,
+        "updated_at": updated_at,
         "message": message,
     }
 
