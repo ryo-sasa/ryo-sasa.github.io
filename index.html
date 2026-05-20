@@ -1,1191 +1,1262 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>金利シミュレーション — ¥66,000 貸付金</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --navy: #0f1225;
-    --dark: #1a1f36;
-    --surface: #1e2540;
-    --accent:  #dc2626;
-    --accent-glow: rgba(220,38,38,0.3);
-    --teal: #0d9488;
-    --teal-glow: rgba(13,148,136,0.3);
-    --gold: #d97706;
-    --green: #16a34a;
-    --green-light: #bbf7d0;
-    --white: #ffffff;
-    --gray-50: #f8fafc;
-    --gray-100: #f1f5f9;
-    --gray-200: #e2e8f0;
-    --gray-300: #cbd5e1;
-    --gray-400: #94a3b8;
-    --gray-500: #64748b;
-    --gray-600: #475569;
-    --gray-800: #1e293b;
-    --serif: 'Noto Serif JP', serif;
-    --sans: 'Noto Sans JP', sans-serif;
-    --mono: 'DM Mono', monospace;
-  }
- 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
- 
-  body {
-    font-family: var(--sans);
-    background: var(--navy);
-    color: var(--white);
-    line-height: 1.8;
-    overflow-x: hidden;
-  }
- 
-  /* ===== HERO ===== */
-  .hero {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    padding: 2rem;
-  }
- 
-  .hero::before {
-    content: '';
-    position: absolute;
-    width: 600px; height: 600px;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--accent-glow), transparent 70%);
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    animation: pulse 4s ease-in-out infinite;
-    pointer-events: none;
-  }
- 
-  @keyframes pulse {
-    0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
-    50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.15); }
-  }
- 
-  .hero-content { position: relative; z-index: 1; }
- 
-  .hero-label {
-    font-size: 0.65rem;
-    letter-spacing: 0.4em;
-    color: var(--gray-400);
-    text-transform: uppercase;
-    margin-bottom: 2rem;
-    opacity: 0;
-    animation: fadeIn 1s 0.3s forwards;
-  }
- 
-  .hero-title {
-    font-family: var(--serif);
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    font-weight: 900;
-    line-height: 1.3;
-    margin-bottom: 1.5rem;
-    opacity: 0;
-    animation: fadeIn 1s 0.5s forwards;
-  }
- 
-  .hero-title .highlight {
-    color: var(--accent);
-    position: relative;
-  }
- 
-  .hero-sub {
-    font-size: 1rem;
-    color: var(--gray-300);
-    max-width: 550px;
-    margin: 0 auto 3rem;
-    opacity: 0;
-    animation: fadeIn 1s 0.7s forwards;
-  }
- 
-  .scroll-cue {
-    opacity: 0;
-    animation: fadeIn 1s 1.2s forwards;
-  }
- 
-  .scroll-cue span {
-    display: block;
-    width: 1px;
-    height: 50px;
-    background: linear-gradient(to bottom, var(--accent), transparent);
-    margin: 0 auto;
-    animation: scrollBounce 2s ease-in-out infinite;
-  }
- 
-  @keyframes scrollBounce {
-    0%, 100% { transform: translateY(0); opacity: 0.5; }
-    50% { transform: translateY(12px); opacity: 1; }
-  }
- 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
- 
-  /* ===== SECTIONS ===== */
-  section { padding: 6rem 2rem; }
- 
-  .section-inner { max-width: 960px; margin: 0 auto; }
- 
-  .section-label {
-    font-size: 0.6rem;
-    letter-spacing: 0.4em;
-    color: var(--accent);
-    text-transform: uppercase;
-    font-weight: 700;
-    margin-bottom: 0.8rem;
-  }
- 
-  .section-title {
-    font-family: var(--serif);
-    font-size: clamp(1.4rem, 3vw, 2rem);
-    font-weight: 900;
-    margin-bottom: 1rem;
-  }
- 
-  .section-desc {
-    color: var(--gray-400);
-    font-size: 0.9rem;
-    max-width: 600px;
-    margin-bottom: 3rem;
-  }
- 
-  /* ===== CONTEXT CARDS ===== */
-  .context { background: var(--dark); }
- 
-  .context-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.2rem;
-  }
- 
-  .ctx-card {
-    background: var(--surface);
-    border: 1px solid rgba(255,255,255,0.05);
-    padding: 2rem 1.5rem;
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.6s, transform 0.6s;
-  }
- 
-  .ctx-card.visible { opacity: 1; transform: translateY(0); }
- 
-  .ctx-card .num {
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    color: var(--gray-500);
-    margin-bottom: 1rem;
-  }
- 
-  .ctx-card h3 {
-    font-family: var(--serif);
-    font-size: 1rem;
-    margin-bottom: 0.6rem;
-    color: var(--white);
-  }
- 
-  .ctx-card p {
-    font-size: 0.8rem;
-    color: var(--gray-400);
-    line-height: 1.7;
-  }
- 
-  .ctx-card .rate-value {
-    font-family: var(--mono);
-    font-size: 1.8rem;
-    font-weight: 500;
-    margin-bottom: 0.3rem;
-  }
- 
-  .ctx-card:nth-child(1) .rate-value { color: var(--teal); }
-  .ctx-card:nth-child(2) .rate-value { color: var(--gold); }
-  .ctx-card:nth-child(3) .rate-value { color: var(--accent); }
- 
-  /* ===== CHART SECTION ===== */
-  .chart-section { background: var(--navy); }
- 
-  .chart-container {
-    background: var(--dark);
-    border: 1px solid rgba(255,255,255,0.05);
-    padding: 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-  }
- 
-  .chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
- 
-  .chart-title-area h3 {
-    font-family: var(--serif);
-    font-size: 1.1rem;
-    margin-bottom: 0.3rem;
-  }
- 
-  .chart-title-area p {
-    font-size: 0.75rem;
-    color: var(--gray-500);
-  }
- 
-  .chart-legend {
-    display: flex;
-    gap: 1.5rem;
-    font-size: 0.7rem;
-    color: var(--gray-400);
-  }
- 
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
- 
-  .legend-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-  }
- 
-  canvas#mainChart {
-    width: 100% !important;
-    height: 350px !important;
-  }
- 
-  /* ===== BAR COMPARISON ===== */
-  .bar-section { background: var(--dark); }
- 
-  .bar-chart {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
- 
-  .bar-row {
-    display: grid;
-    grid-template-columns: 180px 1fr 100px;
-    align-items: center;
-    gap: 1rem;
-  }
- 
-  .bar-label {
-    font-size: 0.8rem;
-    color: var(--gray-300);
-    text-align: right;
-  }
- 
-  .bar-track {
-    height: 36px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 2px;
-    position: relative;
-    overflow: hidden;
-  }
- 
-  .bar-fill {
-    height: 100%;
-    border-radius: 2px;
-    position: absolute;
-    left: 0; top: 0;
-    width: 0;
-    transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding-right: 10px;
-  }
- 
-  .bar-fill.animated { /* width set by JS */ }
- 
-  .bar-value {
-    font-family: var(--mono);
-    font-size: 0.85rem;
-    font-weight: 500;
-    text-align: right;
-  }
- 
-  .bar-row.grace .bar-fill {
-    background: linear-gradient(90deg, var(--teal), #14b8a6);
-  }
-  .bar-row.grace .bar-value { color: var(--teal); }
- 
-  .bar-row.legal .bar-fill {
-    background: linear-gradient(90deg, var(--gold), #f59e0b);
-  }
-  .bar-row.legal .bar-value { color: var(--gold); }
- 
-  .bar-row.consumer .bar-fill {
-    background: linear-gradient(90deg, #ea580c, #f97316);
-  }
-  .bar-row.consumer .bar-value { color: #f97316; }
- 
-  .bar-row.limit .bar-fill {
-    background: linear-gradient(90deg, var(--accent), #ef4444);
-  }
-  .bar-row.limit .bar-value { color: var(--accent); }
- 
-  .bar-row.actual .bar-fill {
-    background: linear-gradient(90deg, var(--green), #22c55e);
-    box-shadow: 0 0 20px rgba(22,163,74,0.3);
-  }
-  .bar-row.actual .bar-value { color: var(--green); }
- 
-  /* ===== SAVINGS COUNTER ===== */
-  .savings {
-    background: var(--navy);
-    text-align: center;
-    padding: 6rem 2rem;
-  }
- 
-  .savings-card {
-    background: var(--surface);
-    border: 1px solid rgba(255,255,255,0.06);
-    display: inline-block;
-    padding: 3rem 4rem;
-    position: relative;
-    overflow: hidden;
-  }
- 
-  .savings-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--teal), var(--green));
-  }
- 
-  .savings-top-label {
-    font-size: 0.65rem;
-    letter-spacing: 0.3em;
-    color: var(--gray-400);
-    text-transform: uppercase;
-    margin-bottom: 0.8rem;
-  }
- 
-  .savings-amount {
-    font-family: var(--mono);
-    font-size: clamp(2.5rem, 7vw, 4.5rem);
-    font-weight: 500;
-    color: var(--green);
-    margin-bottom: 0.5rem;
-    transition: color 0.3s;
-  }
- 
-  .savings-sub {
-    font-size: 0.85rem;
-    color: var(--gray-400);
-    margin-bottom: 2rem;
-  }
- 
-  .savings-detail {
-    font-size: 0.75rem;
-    color: var(--gray-500);
-    line-height: 2;
-  }
- 
-  .savings-detail strong {
-    color: var(--gray-300);
-  }
- 
-  /* ===== MESSAGE ===== */
-  .message {
-    background: var(--dark);
-    text-align: center;
-    padding: 6rem 2rem;
-  }
- 
-  .msg-box {
-    max-width: 600px;
-    margin: 0 auto;
-    border: 1px solid rgba(255,255,255,0.06);
-    padding: 3rem;
-    position: relative;
-  }
- 
-  .msg-box::before {
-    content: '';
-    position: absolute;
-    left: 50%; top: -1px;
-    transform: translateX(-50%);
-    width: 60px; height: 3px;
-    background: var(--accent);
-  }
- 
-  .msg-quote {
-    font-family: var(--serif);
-    font-size: 1.3rem;
-    font-weight: 700;
-    line-height: 1.7;
-    margin-bottom: 1.5rem;
-    color: var(--white);
-  }
- 
-  .msg-text {
-    font-size: 0.85rem;
-    color: var(--gray-400);
-    line-height: 2;
-    margin-bottom: 2rem;
-  }
- 
-  .msg-cta {
-    display: inline-block;
-    background: var(--accent);
-    color: var(--white);
-    font-size: 0.85rem;
-    font-weight: 700;
-    padding: 0.9rem 2.5rem;
-    text-decoration: none;
-    letter-spacing: 0.05em;
-    transition: background 0.3s, transform 0.2s;
-  }
- 
-  .msg-cta:hover {
-    background: #b91c1c;
-    transform: translateY(-2px);
-  }
- 
-  /* ===== MODAL ===== */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    transition: background 0.4s;
-    backdrop-filter: blur(0px);
-  }
- 
-  .modal-overlay.active {
-    background: rgba(0,0,0,0.75);
-    pointer-events: all;
-    backdrop-filter: blur(8px);
-  }
- 
-  .modal {
-    background: var(--surface);
-    border: 1px solid rgba(255,255,255,0.08);
-    max-width: 480px;
-    width: 90%;
-    padding: 3rem 2.5rem;
-    text-align: center;
-    position: relative;
-    transform: scale(0.85) translateY(30px);
-    opacity: 0;
-    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s;
-  }
- 
-  .modal-overlay.active .modal {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
- 
-  .modal::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--teal), var(--green));
-  }
- 
-  .modal-check {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: rgba(22,163,74,0.12);
-    border: 2px solid var(--green);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.5rem;
-  }
- 
-  .modal-check svg {
-    width: 28px;
-    height: 28px;
-    stroke: var(--green);
-    stroke-width: 3;
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
- 
-  .modal-check svg .check-path {
-    stroke-dasharray: 40;
-    stroke-dashoffset: 40;
-    transition: stroke-dashoffset 0.6s 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  }
- 
-  .modal-overlay.active .modal-check svg .check-path {
-    stroke-dashoffset: 0;
-  }
- 
-  .modal-title {
-    font-family: var(--serif);
-    font-size: 1.5rem;
-    font-weight: 900;
-    color: var(--white);
-    margin-bottom: 0.5rem;
-  }
- 
-  .modal-subtitle {
-    font-size: 0.85rem;
-    color: var(--green);
-    font-weight: 500;
-    margin-bottom: 1.5rem;
-  }
- 
-  .modal-timestamp {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.06);
-    padding: 1rem 1.5rem;
-    margin-bottom: 1.5rem;
-  }
- 
-  .modal-ts-label {
-    font-size: 0.6rem;
-    letter-spacing: 0.3em;
-    color: var(--gray-500);
-    text-transform: uppercase;
-    margin-bottom: 0.4rem;
-  }
- 
-  .modal-ts-value {
-    font-family: var(--mono);
-    font-size: 1.1rem;
-    color: var(--white);
-    font-weight: 500;
-  }
- 
-  .modal-amount-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.8rem 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    font-size: 0.85rem;
-  }
- 
-  .modal-amount-row:last-of-type {
-    border-bottom: none;
-  }
- 
-  .modal-amount-row .label { color: var(--gray-400); }
-  .modal-amount-row .val { font-family: var(--mono); font-weight: 500; }
-  .modal-amount-row .val.green { color: var(--green); }
-  .modal-amount-row .val.strike { color: var(--gray-500); text-decoration: line-through; }
- 
-  .modal-divider {
-    height: 1px;
-    background: rgba(255,255,255,0.06);
-    margin: 1.2rem 0;
-  }
- 
-  .modal-note {
-    font-size: 0.75rem;
-    color: var(--gray-500);
-    line-height: 1.8;
-    margin-bottom: 1.5rem;
-  }
- 
-  .modal-confirm-btn {
-    display: inline-block;
-    background: var(--green);
-    color: var(--white);
-    font-family: var(--sans);
-    font-size: 0.85rem;
-    font-weight: 700;
-    padding: 0.9rem 2.5rem;
-    border: none;
-    cursor: pointer;
-    letter-spacing: 0.05em;
-    transition: background 0.3s, transform 0.2s;
-    width: 100%;
-  }
- 
-  .modal-confirm-btn:hover {
-    background: #15803d;
-    transform: translateY(-1px);
-  }
- 
-  .confetti-container {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 10000;
-    overflow: hidden;
-  }
- 
-  .confetti {
-    position: absolute;
-    width: 8px; height: 8px;
-    top: -10px;
-    opacity: 0;
-  }
- 
-  @keyframes confettiFall {
-    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-  }
- 
-  /* ===== FOOTER ===== */
-  footer {
-    background: var(--navy);
-    padding: 2rem;
-    text-align: center;
-    font-size: 0.65rem;
-    color: var(--gray-500);
-    border-top: 1px solid rgba(255,255,255,0.04);
-  }
- 
-  /* ===== TICKER ===== */
-  .ticker {
-    background: var(--accent);
-    overflow: hidden;
-    white-space: nowrap;
-    padding: 0.5rem 0;
-  }
- 
-  .ticker-inner {
-    display: inline-block;
-    animation: tickerScroll 20s linear infinite;
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.05em;
-    color: rgba(255,255,255,0.85);
-  }
- 
-  @keyframes tickerScroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
- 
-  /* ===== RESPONSIVE ===== */
-  @media (max-width: 768px) {
-    .context-grid { grid-template-columns: 1fr; }
-    .bar-row { grid-template-columns: 100px 1fr 80px; }
-    .bar-label { font-size: 0.7rem; }
-    .savings-card { padding: 2rem 2rem; }
-    .chart-container { padding: 1.5rem; }
-  }
- 
-  /* ===== REVEAL ===== */
-  .reveal {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.7s, transform 0.7s;
-  }
-  .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="data:,">
+  <title>新潟大学 情報理工棟 ／ 新潟方面 発車案内</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      color-scheme: dark;
+
+      /* ---- base ---- */
+      --bg: #04070b;
+      --bg-2: #070c12;
+      --board: #04060a;
+      --panel: #0a121a;
+      --panel-2: #0c1722;
+      --frame: #16222c;
+      --frame-2: #233642;
+
+      /* ---- ink ---- */
+      --ink: #ecf3f1;
+      --ink-dim: #87a09b;
+      --ink-faint: #5d7470;
+
+      /* ---- signage palette ---- */
+      --amber: #ffb22e;          /* 発車標 LED アンバー */
+      --amber-glow: rgba(255, 178, 46, 0.30);
+      --amber-soft: rgba(255, 178, 46, 0.13);
+      --jr: #00b25a;             /* JR ブランドグリーン */
+      --jr-soft: rgba(0, 178, 90, 0.14);
+      --bus: #ff7a3c;            /* 新潟交通 オレンジ */
+      --bus-soft: rgba(255, 122, 60, 0.14);
+
+      /* ---- status ---- */
+      --ok: #25c878;
+      --ok-soft: rgba(37, 200, 120, 0.15);
+      --notice: #ffb22e;
+      --notice-soft: rgba(255, 178, 46, 0.15);
+      --delay: #ff9322;
+      --delay-soft: rgba(255, 147, 34, 0.15);
+      --bad: #ff5546;
+      --bad-soft: rgba(255, 85, 70, 0.16);
+      --info: #57c8ff;
+      --info-soft: rgba(87, 200, 255, 0.15);
+      --unknown: #8ba1a1;
+      --unknown-soft: rgba(139, 161, 161, 0.13);
+
+      --display: "Oswald", "DIN Alternate", "Bahnschrift", sans-serif;
+      --jp: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", sans-serif;
+
+      --board-cols:
+        clamp(4.6rem, 7vw, 8.2rem)
+        clamp(4.8rem, 6.6vw, 7.6rem)
+        minmax(0, 1.15fr)
+        minmax(0, 1.6fr)
+        clamp(4rem, 5vw, 6rem)
+        clamp(4.6rem, 5.6vw, 6.8rem)
+        clamp(5rem, 6vw, 7.6rem);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; margin: 0; }
+
+    body {
+      font-family: var(--jp);
+      color: var(--ink);
+      background:
+        radial-gradient(120% 80% at 14% 0%, rgba(0, 178, 90, 0.10), transparent 55%),
+        radial-gradient(120% 80% at 90% 0%, rgba(255, 178, 46, 0.08), transparent 55%),
+        linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 60%);
+      overflow: hidden;
+      letter-spacing: 0.01em;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ---------- frame ---------- */
+    .signage {
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: clamp(8px, 1vmin, 14px);
+      padding:
+        calc(clamp(10px, 1.6vmin, 20px) + env(safe-area-inset-top))
+        calc(clamp(10px, 1.6vmin, 20px) + env(safe-area-inset-right))
+        calc(clamp(10px, 1.6vmin, 20px) + env(safe-area-inset-bottom))
+        calc(clamp(10px, 1.6vmin, 20px) + env(safe-area-inset-left));
+      animation: drift 540s ease-in-out infinite;   /* 焼き付き対策の超低速シフト */
+    }
+
+    @keyframes drift {
+      0%, 100% { transform: translate(0, 0); }
+      25%      { transform: translate(2px, 1px); }
+      50%      { transform: translate(-1px, 2px); }
+      75%      { transform: translate(1px, -2px); }
+    }
+
+    /* ---------- header ---------- */
+    .head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: clamp(10px, 1.6vw, 22px);
+      align-items: stretch;
+    }
+
+    .identity {
+      display: flex;
+      align-items: center;
+      gap: clamp(10px, 1.4vw, 18px);
+      padding: clamp(10px, 1.5vmin, 18px) clamp(14px, 1.8vw, 24px);
+      border: 1px solid var(--frame);
+      border-radius: 14px;
+      background:
+        linear-gradient(100deg, var(--jr-soft), transparent 60%),
+        var(--panel);
+    }
+
+    .jr-mark {
+      flex: none;
+      width: clamp(9px, 1.1vw, 14px);
+      align-self: stretch;
+      border-radius: 5px;
+      background: linear-gradient(180deg, #18d878, var(--jr));
+      box-shadow: 0 0 16px rgba(0, 178, 90, 0.5);
+    }
+
+    .identity h1 {
+      margin: 0;
+      font-family: var(--jp);
+      font-weight: 700;
+      font-size: clamp(1.4rem, 3vmin, 2.9rem);
+      line-height: 1.05;
+      letter-spacing: 0.02em;
+    }
+
+    .identity .sub {
+      margin: clamp(3px, 0.7vmin, 8px) 0 0;
+      color: var(--ink-dim);
+      font-size: clamp(0.74rem, 1.45vmin, 1.05rem);
+      letter-spacing: 0.06em;
+    }
+
+    .identity .en {
+      display: block;
+      margin-top: 2px;
+      font-family: var(--display);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.26em;
+      color: var(--ink-faint);
+      font-size: clamp(0.56rem, 1.05vmin, 0.78rem);
+    }
+
+    .clock {
+      display: grid;
+      grid-template-columns: auto auto;
+      grid-template-rows: auto auto;
+      gap: 2px clamp(12px, 1.4vw, 20px);
+      align-items: center;
+      padding: clamp(8px, 1.3vmin, 16px) clamp(14px, 1.7vw, 24px);
+      border: 1px solid var(--frame);
+      border-radius: 14px;
+      background:
+        linear-gradient(260deg, var(--amber-soft), transparent 60%),
+        var(--panel);
+    }
+
+    .clock .time {
+      grid-row: 1 / 3;
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: clamp(3rem, 7vmin, 6.4rem);
+      line-height: 0.86;
+      letter-spacing: 0.03em;
+      color: var(--amber);
+      text-shadow: 0 0 26px var(--amber-glow);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .clock .date {
+      align-self: end;
+      color: var(--ink);
+      font-size: clamp(0.82rem, 1.7vmin, 1.3rem);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .clock .pill-row {
+      align-self: start;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* ---------- pills ---------- */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: clamp(3px, 0.6vmin, 7px) clamp(8px, 1vw, 13px);
+      border-radius: 999px;
+      border: 1px solid currentColor;
+      font-size: clamp(0.62rem, 1.18vmin, 0.92rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    .pill::before {
+      content: "";
+      width: 0.62em; height: 0.62em;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+    .pill.normal,    .pill.signal-green { color: var(--ok);      background: var(--ok-soft); }
+    .pill.notice,    .pill.signal-amber { color: var(--notice);  background: var(--notice-soft); }
+    .pill.delay                         { color: var(--delay);   background: var(--delay-soft); }
+    .pill.disrupted, .pill.signal-red   { color: var(--bad);     background: var(--bad-soft); }
+    .pill.signal-blue                   { color: var(--info);    background: var(--info-soft); }
+    .pill.unknown                       { color: var(--unknown); background: var(--unknown-soft); }
+    .pill > span { color: var(--ink); }
+
+    /* ---------- main layout ---------- */
+    .main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.62fr) minmax(280px, 0.95fr);
+      gap: clamp(8px, 1vmin, 14px);
+      min-height: 0;
+    }
+
+    .panel {
+      border: 1px solid var(--frame);
+      border-radius: 16px;
+      background: var(--panel);
+      min-height: 0;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: clamp(7px, 1vmin, 12px) clamp(11px, 1.4vw, 18px);
+      border-bottom: 1px solid var(--frame);
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .panel-title b {
+      font-size: clamp(0.92rem, 1.8vmin, 1.4rem);
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+    .panel-title em {
+      font-family: var(--display);
+      font-style: normal;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.24em;
+      font-size: clamp(0.56rem, 1.05vmin, 0.78rem);
+      color: var(--ink-faint);
+    }
+
+    .fetched {
+      font-family: var(--display);
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      font-size: clamp(0.6rem, 1.15vmin, 0.86rem);
+      color: var(--ink-dim);
+    }
+
+    /* ---------- board (left) ---------- */
+    .board {
+      display: grid;
+      grid-template-rows: auto auto auto minmax(0, 1fr);
+      overflow: hidden;
+      background:
+        radial-gradient(140% 120% at 50% 0%, rgba(255, 178, 46, 0.05), transparent 60%),
+        var(--board);
+    }
+
+    /* hero — recommended departure */
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.15fr);
+      gap: clamp(10px, 1.4vw, 22px);
+      align-items: center;
+      margin: clamp(8px, 1vmin, 14px);
+      padding: clamp(10px, 1.5vmin, 20px) clamp(12px, 1.6vw, 22px);
+      border-radius: 13px;
+      border: 1px solid rgba(255, 178, 46, 0.22);
+      background:
+        linear-gradient(110deg, var(--amber-soft), transparent 62%),
+        var(--panel-2);
+    }
+
+    .hero-key {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: clamp(5px, 0.8vmin, 9px);
+      color: var(--amber);
+      font-weight: 700;
+      font-size: clamp(0.72rem, 1.35vmin, 1.02rem);
+      letter-spacing: 0.05em;
+    }
+    .hero-key svg { width: 1.15em; height: 1.15em; flex: none; }
+
+    .hero-time {
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: clamp(3.1rem, 8vmin, 7rem);
+      line-height: 0.84;
+      letter-spacing: 0.03em;
+      color: var(--amber);
+      text-shadow: 0 0 30px var(--amber-glow);
+      font-variant-numeric: tabular-nums;
+    }
+    .hero-route {
+      margin-top: clamp(4px, 0.8vmin, 9px);
+      font-weight: 700;
+      font-size: clamp(0.92rem, 1.85vmin, 1.45rem);
+    }
+    .hero-copy {
+      margin: clamp(4px, 0.7vmin, 8px) 0 0;
+      color: var(--ink-dim);
+      font-size: clamp(0.7rem, 1.32vmin, 1rem);
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+    }
+
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: clamp(6px, 0.9vmin, 11px);
+    }
+    .metric {
+      padding: clamp(7px, 1.1vmin, 13px) clamp(9px, 1.1vw, 14px);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid var(--frame);
+    }
+    .metric span {
+      display: block;
+      color: var(--ink-faint);
+      font-size: clamp(0.58rem, 1.1vmin, 0.8rem);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+    .metric strong {
+      display: block;
+      margin-top: clamp(3px, 0.6vmin, 7px);
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: clamp(1.05rem, 2.3vmin, 1.85rem);
+      line-height: 1;
+      letter-spacing: 0.03em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* board head row */
+    .board-head {
+      display: grid;
+      grid-template-columns: var(--board-cols);
+      gap: clamp(6px, 0.8vw, 12px);
+      margin: 0 clamp(8px, 1vmin, 14px);
+      padding: clamp(5px, 0.8vmin, 10px) clamp(10px, 1.1vw, 16px);
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--ink-faint);
+      font-size: clamp(0.58rem, 1.05vmin, 0.82rem);
+      font-weight: 700;
+      letter-spacing: 0.13em;
+    }
+
+    /* rows */
+    .board-rows {
+      display: grid;
+      gap: clamp(5px, 0.7vmin, 9px);
+      align-content: start;
+      margin: clamp(6px, 0.8vmin, 10px) clamp(8px, 1vmin, 14px) clamp(8px, 1vmin, 14px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: var(--amber) rgba(255, 255, 255, 0.05);
+    }
+    .board-rows::-webkit-scrollbar { width: 8px; }
+    .board-rows::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 999px; }
+    .board-rows::-webkit-scrollbar-thumb { background: rgba(255, 178, 46, 0.4); border-radius: 999px; }
+
+    .board-row {
+      display: grid;
+      grid-template-columns: var(--board-cols);
+      gap: clamp(6px, 0.8vw, 12px);
+      align-items: center;
+      padding: clamp(7px, 1.05vmin, 13px) clamp(10px, 1.1vw, 16px);
+      border-radius: 10px;
+      border: 1px solid var(--frame);
+      background:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 3px),
+        rgba(255, 255, 255, 0.018);
+      position: relative;
+    }
+    .board-row.featured {
+      border-color: rgba(255, 178, 46, 0.4);
+      background:
+        linear-gradient(100deg, rgba(255, 178, 46, 0.16), transparent 60%),
+        rgba(255, 178, 46, 0.04);
+      box-shadow: inset 3px 0 0 var(--amber);
+    }
+    .board-row.unreachable { opacity: 0.46; }
+
+    .led-time strong,
+    .board-metric strong,
+    .board-slack strong {
+      display: block;
+      font-family: var(--display);
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: 0.03em;
+      font-variant-numeric: tabular-nums;
+    }
+    .led-time strong {
+      font-size: clamp(1.55rem, 3.4vmin, 3rem);
+      color: var(--amber);
+      text-shadow: 0 0 16px var(--amber-glow);
+    }
+    .led-time span,
+    .board-service small,
+    .board-stop span,
+    .board-destination span,
+    .board-metric span,
+    .board-slack span {
+      display: block;
+      margin-top: clamp(2px, 0.5vmin, 5px);
+      color: var(--ink-faint);
+      font-size: clamp(0.6rem, 1.1vmin, 0.85rem);
+      line-height: 1.4;
+    }
+
+    .service-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: clamp(2.8rem, 4.6vw, 4.4rem);
+      padding: clamp(3px, 0.6vmin, 7px) clamp(6px, 0.8vw, 11px);
+      border-radius: 7px;
+      font-family: var(--display);
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      font-size: clamp(0.86rem, 1.7vmin, 1.3rem);
+      color: #07100c;
+    }
+    .service-chip.jr  { background: linear-gradient(180deg, #19d27e, var(--jr)); }
+    .service-chip.bus { background: linear-gradient(180deg, #ff9b66, var(--bus)); }
+    .service-chip.alt { background: linear-gradient(180deg, #45d39a, #11a98e); }
+    .board-service small { letter-spacing: 0.1em; }
+
+    .board-stop strong,
+    .board-destination strong {
+      display: block;
+      font-weight: 700;
+      font-size: clamp(0.82rem, 1.55vmin, 1.22rem);
+      line-height: 1.32;
+    }
+    .board-metric strong { font-size: clamp(0.98rem, 2vmin, 1.55rem); color: var(--ink); }
+    .board-slack strong  { font-size: clamp(1rem, 2.05vmin, 1.6rem); }
+    .board-slack strong.good { color: var(--ok); }
+    .board-slack strong.warn { color: var(--notice); }
+    .board-slack strong.bad  { color: var(--bad); }
+
+    /* ---------- side column ---------- */
+    .side {
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      gap: clamp(8px, 1vmin, 14px);
+      min-height: 0;
+    }
+    .side .panel { display: flex; flex-direction: column; }
+    .side .panel-body {
+      padding: clamp(8px, 1.1vmin, 14px);
+      display: grid;
+      gap: clamp(6px, 0.9vmin, 11px);
+      flex: 1;
+      min-height: 0;
+    }
+    .side .panel:last-child .panel-body { overflow: auto; align-content: start; }
+
+    /* operation status */
+    .op-row {
+      display: grid;
+      grid-template-columns: clamp(8px, 0.9vw, 12px) 1fr;
+      gap: clamp(8px, 1vw, 14px);
+      padding: clamp(8px, 1.1vmin, 13px);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--frame);
+    }
+    .op-bar { border-radius: 5px; }
+    .op-bar.jr  { background: linear-gradient(180deg, #19d27e, var(--jr)); }
+    .op-bar.bus { background: linear-gradient(180deg, #ff9b66, var(--bus)); }
+    .op-bar.cal { background: linear-gradient(180deg, #7fb4ff, #3b7bd1); }
+    .op-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .op-top b { font-size: clamp(0.82rem, 1.55vmin, 1.18rem); font-weight: 700; }
+    .op-row p {
+      margin: clamp(4px, 0.7vmin, 8px) 0 0;
+      color: var(--ink-dim);
+      font-size: clamp(0.66rem, 1.22vmin, 0.94rem);
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+    }
+
+    /* walk times */
+    .walk-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: clamp(7px, 1vmin, 12px) clamp(10px, 1.1vw, 15px);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--frame);
+    }
+    .walk-row span { font-size: clamp(0.74rem, 1.4vmin, 1.05rem); font-weight: 700; }
+    .walk-row span small {
+      display: block;
+      font-weight: 400;
+      color: var(--ink-faint);
+      font-size: 0.78em;
+      letter-spacing: 0.06em;
+    }
+    .walk-row strong {
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: clamp(1.1rem, 2.3vmin, 1.85rem);
+      color: var(--amber);
+      letter-spacing: 0.03em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* up-next mini board */
+    .mini-route {
+      padding: clamp(7px, 1vmin, 12px) clamp(10px, 1.1vw, 14px);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--frame);
+    }
+    .mini-route strong { display: block; font-size: clamp(0.78rem, 1.45vmin, 1.08rem); font-weight: 700; }
+    .mini-route p {
+      margin: 3px 0 0;
+      color: var(--ink-faint);
+      font-size: clamp(0.62rem, 1.15vmin, 0.86rem);
+      line-height: 1.4;
+    }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: clamp(5px, 0.8vmin, 9px); }
+    .time-chip {
+      font-family: var(--display);
+      font-weight: 500;
+      font-size: clamp(0.78rem, 1.5vmin, 1.12rem);
+      letter-spacing: 0.04em;
+      padding: clamp(2px, 0.5vmin, 5px) clamp(7px, 0.9vw, 11px);
+      border-radius: 999px;
+      border: 1px solid var(--frame-2);
+      background: rgba(255, 255, 255, 0.04);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ---------- ticker ---------- */
+    .ticker {
+      display: flex;
+      align-items: center;
+      gap: clamp(8px, 1vw, 16px);
+      padding: clamp(6px, 0.9vmin, 12px) clamp(10px, 1.3vw, 18px);
+      border: 1px solid var(--frame);
+      border-radius: 13px;
+      background:
+        linear-gradient(90deg, var(--jr-soft), transparent 22%),
+        var(--panel);
+      overflow: hidden;
+    }
+    .ticker-label {
+      flex: none;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--display);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: clamp(0.62rem, 1.15vmin, 0.88rem);
+      color: var(--jr);
+    }
+    .ticker-label::before {
+      content: "";
+      width: 0.6em; height: 0.6em;
+      border-radius: 50%;
+      background: var(--jr);
+      box-shadow: 0 0 9px var(--jr);
+      animation: blink 1.6s steps(1) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0.25; } }
+    .ticker-window { flex: 1; overflow: hidden; }
+    #tickerText {
+      display: inline-block;
+      white-space: nowrap;
+      padding-left: 100%;
+      font-size: clamp(0.78rem, 1.5vmin, 1.18rem);
+      font-weight: 700;
+      color: var(--ink);
+      animation: marquee 42s linear infinite;
+    }
+    @keyframes marquee { to { transform: translateX(-100%); } }
+
+    /* ---------- responsive: portrait / small ---------- */
+    @media (max-width: 1040px), (orientation: portrait) {
+      body { overflow: auto; }
+      .signage { height: auto; min-height: 100dvh; animation: none; }
+      .head { grid-template-columns: 1fr; }
+      .main { grid-template-columns: 1fr; }
+      .board { grid-template-rows: auto auto auto auto; }
+      .hero { grid-template-columns: 1fr; }
+      .board-rows { overflow: visible; }
+      .side .panel:last-child .panel-body { overflow: visible; }
+    }
+    @media (max-width: 720px) {
+      .board-head { display: none; }
+      .board-row { grid-template-columns: auto 1fr; row-gap: 6px; }
+      .board-row > .board-destination { grid-column: 1 / -1; }
+      .board-row > .board-metric,
+      .board-row > .board-slack { grid-column: span 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .signage { animation: none; }
+      #tickerText { animation: none; padding-left: 0; }
+      .ticker-label::before { animation: none; }
+    }
+  </style>
 </head>
 <body>
- 
-<!-- TICKER -->
-<div class="ticker">
-  <div class="ticker-inner">
-    <span>INTEREST RATE SIMULATION — ¥66,000 LOAN — ORIGINATED OCT 2025 — CURRENT: 0% (GRACE) — LEGAL MAX: 18% — CONSUMER FINANCE: 15-18% — YOU ARE SAVING ¥ BY PAYING ¥66,000 FLAT —&nbsp;&nbsp;&nbsp;&nbsp;</span>
-    <span>INTEREST RATE SIMULATION — ¥66,000 LOAN — ORIGINATED OCT 2025 — CURRENT: 0% (GRACE) — LEGAL MAX: 18% — CONSUMER FINANCE: 15-18% — YOU ARE SAVING ¥ BY PAYING ¥66,000 FLAT —&nbsp;&nbsp;&nbsp;&nbsp;</span>
-  </div>
-</div>
- 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-content">
-    <div class="hero-label">Interest Rate Simulation Report — April 2026</div>
-    <h1 class="hero-title">
-      本来なら<br>
-      <span class="highlight">¥66,000では済まない</span><br>
-      という話
-    </h1>
-    <p class="hero-sub">
-      2025年10月に貸し付けた ¥66,000。金利ゼロで返済を求めていますが、
-      市場金利を適用した場合の「本来の返済額」をシミュレーションしました。
-    </p>
-    <div class="scroll-cue"><span></span></div>
-  </div>
-</section>
- 
-<!-- CONTEXT -->
-<section class="context">
-  <div class="section-inner">
-    <div class="section-label reveal">Market Context</div>
-    <div class="section-title reveal">現在の金利環境</div>
-    <p class="section-desc reveal">日銀の利上げにより金利は上昇基調。個人間貸借にも法定金利の基準があります。</p>
- 
-    <div class="context-grid">
-      <div class="ctx-card">
-        <div class="num">01 — 民法・法定利率</div>
-        <div class="rate-value">3.0%</div>
-        <h3>民法上の法定利率</h3>
-        <p>利息の取り決めがない場合に適用される利率。2026年3月末まで年3%。</p>
-      </div>
-      <div class="ctx-card">
-        <div class="num">02 — 消費者金融水準</div>
-        <div class="rate-value">15-18%</div>
-        <h3>カードローン金利帯</h3>
-        <p>消費者金融やカードローンの一般的な金利帯。銀行カードローンでも年14%前後。</p>
-      </div>
-      <div class="ctx-card">
-        <div class="num">03 — 利息制限法上限</div>
-        <div class="rate-value">18.0%</div>
-        <h3>法律上の上限金利</h3>
-        <p>10万円以上100万円未満の個人間貸付における利息制限法の上限。超過分は無効。</p>
-      </div>
-    </div>
-  </div>
-</section>
- 
-<!-- CHART -->
-<section class="chart-section">
-  <div class="section-inner">
-    <div class="section-label reveal">Simulation</div>
-    <div class="section-title reveal">金利別・返済総額の推移</div>
-    <p class="section-desc reveal">2025年10月〜2026年10月の1年間で、各金利を適用した場合の返済額推移。</p>
- 
-    <div class="chart-container reveal">
-      <div class="chart-header">
-        <div class="chart-title-area">
-          <h3>¥66,000 貸付金 — 月次返済額シミュレーション</h3>
-          <p>元本 ¥66,000 / 貸付日 2025年10月 / 単利計算</p>
+  <main class="signage">
+
+    <!-- ===== header ===== -->
+    <header class="head">
+      <section class="identity">
+        <div class="jr-mark" aria-hidden="true"></div>
+        <div>
+          <h1>新潟大学 情報理工棟 ／ 新潟方面 発車案内</h1>
+          <p class="sub">JR越後線 ・ 新潟交通バス ／ 情報理工棟から出発する次便のご案内
+            <span class="en">Niigata Univ. — Departure Guide for Niigata</span>
+          </p>
         </div>
-        <div class="chart-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div> 現在の請求額（0%）</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#0d9488"></div> 法定利率 3%</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#d97706"></div> 銀行ローン 14%</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div> 利息制限法上限 18%</div>
+      </section>
+
+      <aside class="clock" aria-live="polite">
+        <strong class="time" id="liveClock">--:--</strong>
+        <span class="date" id="liveDate">----年--月--日</span>
+        <div class="pill-row">
+          <span class="pill normal"  id="calendarBadge">ダイヤ判定中</span>
+          <span class="pill unknown" id="jrBadge">JR 取得前</span>
+          <span class="pill unknown" id="busBadge">BUS 取得前</span>
         </div>
+      </aside>
+    </header>
+
+    <!-- ===== main ===== -->
+    <div class="main">
+
+      <!-- left : departure board -->
+      <section class="panel board">
+        <div class="panel-head">
+          <div class="panel-title">
+            <b>発車案内</b><em>Departure</em>
+          </div>
+          <span class="fetched" id="fetchedAt">取得待ち</span>
+        </div>
+
+        <article class="hero">
+          <div>
+            <div class="hero-key">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6"/>
+              </svg>
+              次に出るならコレ
+              <span class="pill signal-green" id="statusPill">判定中</span>
+            </div>
+            <div class="hero-time" id="mainJudgement">--:--</div>
+            <div class="hero-route" id="bestRoute">経路を計算しています</div>
+            <p class="hero-copy" id="mainCopy">徒歩時間と出発リミットを計算しています。</p>
+          </div>
+          <div class="hero-metrics">
+            <div class="metric"><span>発車時刻</span><strong id="bestDepart">--:--</strong></div>
+            <div class="metric"><span>出発リミット</span><strong id="leaveBy">--:--</strong></div>
+            <div class="metric"><span>到着目安</span><strong id="arriveAt">--:--</strong></div>
+            <div class="metric"><span>経路</span><strong id="bestDescriptor">--</strong></div>
+          </div>
+        </article>
+
+        <div class="board-head">
+          <div>発車</div>
+          <div>種別</div>
+          <div>のりば</div>
+          <div>行先</div>
+          <div>徒歩</div>
+          <div>出発目安</div>
+          <div>余裕</div>
+        </div>
+        <div class="board-rows" id="departuresBody"></div>
+      </section>
+
+      <!-- right : side info -->
+      <aside class="side">
+        <!-- operation -->
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title"><b>運行情報</b><em>Operation</em></div>
+          </div>
+          <div class="panel-body">
+            <div class="op-row">
+              <div class="op-bar jr"></div>
+              <div>
+                <div class="op-top">
+                  <b>JR越後線</b>
+                  <span class="pill unknown" id="jrStatusBadge">取得前</span>
+                </div>
+                <p id="jrStatus">自動取得した JR東日本の運行情報を表示します。</p>
+              </div>
+            </div>
+            <div class="op-row">
+              <div class="op-bar bus"></div>
+              <div>
+                <div class="op-top">
+                  <b>新潟交通バス</b>
+                  <span class="pill unknown" id="busStatusBadge">取得前</span>
+                </div>
+                <p id="busStatus">自動取得した新潟交通の運行情報を表示します。</p>
+              </div>
+            </div>
+            <div class="op-row">
+              <div class="op-bar cal"></div>
+              <div>
+                <div class="op-top">
+                  <b>本日のダイヤ</b>
+                  <span class="pill normal" id="calendarStatusBadge">判定中</span>
+                </div>
+                <p id="calendarStatus">曜日と祝日から平日／土曜・休日を自動判定します。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- walk times -->
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title"><b>情報理工棟からの徒歩</b><em>Walk</em></div>
+          </div>
+          <div class="panel-body">
+            <div class="walk-row">
+              <span>新大西門<small>新潟交通 バス停</small></span>
+              <strong id="walkBusDisplay">5分</strong>
+            </div>
+            <div class="walk-row">
+              <span>新潟大学前駅<small>JR越後線</small></span>
+              <strong id="walkUnivDisplay">20分</strong>
+            </div>
+            <div class="walk-row">
+              <span>内野駅<small>JR越後線</small></span>
+              <strong id="walkUchinoDisplay">15分</strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- up next -->
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title"><b>この後の発車</b><em>Up Next</em></div>
+          </div>
+          <div class="panel-body" id="miniBoard"></div>
+        </section>
+      </aside>
+    </div>
+
+    <!-- ===== ticker ===== -->
+    <footer class="ticker" aria-live="polite">
+      <span class="ticker-label">Service Info</span>
+      <div class="ticker-window">
+        <span id="tickerText">運行情報を読み込み中です。</span>
       </div>
-      <canvas id="mainChart"></canvas>
-    </div>
-  </div>
-</section>
- 
-<!-- BAR COMPARISON -->
-<section class="bar-section">
-  <div class="section-inner">
-    <div class="section-label reveal">Comparison</div>
-    <div class="section-title reveal">2026年4月時点の返済額比較</div>
-    <p class="section-desc reveal">貸付から6ヶ月経過時点。各金利シナリオでの本来の返済総額。</p>
- 
-    <div class="bar-chart">
-      <div class="bar-row actual reveal">
-        <div class="bar-label">現在の請求額（0%）</div>
-        <div class="bar-track"><div class="bar-fill" data-width="84.6"></div></div>
-        <div class="bar-value">¥66,000</div>
-      </div>
-      <div class="bar-row grace reveal">
-        <div class="bar-label">法定利率 3%</div>
-        <div class="bar-track"><div class="bar-fill" data-width="86.0"></div></div>
-        <div class="bar-value">¥66,990</div>
-      </div>
-      <div class="bar-row legal reveal">
-        <div class="bar-label">銀行ローン 14%</div>
-        <div class="bar-track"><div class="bar-fill" data-width="92.7"></div></div>
-        <div class="bar-value">¥70,620</div>
-      </div>
-      <div class="bar-row consumer reveal">
-        <div class="bar-label">消費者金融 18%</div>
-        <div class="bar-track"><div class="bar-fill" data-width="96.6"></div></div>
-        <div class="bar-value">¥71,940</div>
-      </div>
-      <div class="bar-row limit reveal">
-        <div class="bar-label">出資法上限 20%</div>
-        <div class="bar-track"><div class="bar-fill" data-width="100"></div></div>
-        <div class="bar-value">¥72,600</div>
-      </div>
-    </div>
-  </div>
-</section>
- 
-<!-- SAVINGS COUNTER -->
-<section class="savings">
-  <div class="section-label reveal">Your Discount</div>
-  <div class="section-title reveal" style="margin-bottom: 2rem;">金利ゼロで<span style="color:var(--green)">いくら得しているか</span></div>
- 
-  <div class="savings-card reveal">
-    <div class="savings-top-label">利息制限法上限（18%）適用時との差額</div>
-    <div class="savings-amount" id="savingsCounter">¥0</div>
-    <div class="savings-sub">この金額を免除して ¥66,000 のみを請求しています</div>
-    <div class="savings-detail">
-      <strong>法定利率 3%</strong> なら ¥990 の免除<br>
-      <strong>銀行ローン 14%</strong> なら ¥4,620 の免除<br>
-      <strong>利息制限法上限 18%</strong> なら <strong>¥5,940</strong> の免除<br>
-      <strong>1年後（18%）</strong>なら <strong>¥11,880</strong> の免除
-    </div>
-  </div>
-</section>
- 
-<!-- MESSAGE -->
-<section class="message">
-  <div class="msg-box reveal">
-    <div class="msg-quote">
-      ¥66,000 で良いと<br>言っているうちに。
-    </div>
-    <p class="msg-text">
-      本来であれば利息を請求する権利がありますが、
-      友人としての関係を大切にし、元本のみの返済をお願いしています。<br><br>
-      金利が上昇し続ける市場環境の中で、
-      この条件がいかに寛大であるか、ご理解いただけたかと思います。<br><br>
-      <strong style="color: var(--white);">
-        返済が遅れるほど、本来なら利息は膨らみます。<br>
-        今が、最もお得に返済できるタイミングです。
-      </strong>
-    </p>
-    <button class="msg-cta" id="repayBtn" onclick="openModal()">¥66,000 を返済する</button>
-  </div>
-</section>
- 
-<!-- MODAL -->
-<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-check">
-      <svg viewBox="0 0 24 24"><polyline class="check-path" points="4 12 10 18 20 6"/></svg>
-    </div>
-    <div class="modal-title">そのアクションを<br>待っていました。</div>
-    <div class="modal-subtitle">返済意思の記録が完了しました</div>
- 
-    <div class="modal-timestamp">
-      <div class="modal-ts-label">Timestamp — 返済意思表示日時</div>
-      <div class="modal-ts-value" id="modalTimestamp">—</div>
-    </div>
- 
-    <div class="modal-amount-row">
-      <span class="label">利息制限法上限（18%）適用時</span>
-      <span class="val strike">¥71,940</span>
-    </div>
-    <div class="modal-amount-row">
-      <span class="label">利息免除額</span>
-      <span class="val green">- ¥5,940</span>
-    </div>
-    <div class="modal-divider"></div>
-    <div class="modal-amount-row">
-      <span class="label" style="color:var(--white); font-weight:700;">ご請求額（金利0%）</span>
-      <span class="val green" style="font-size:1.2rem;">¥66,000</span>
-    </div>
- 
-    <div class="modal-divider"></div>
- 
-    <div class="modal-note">
-      上記日時にて返済の意思表示が記録されました。<br>
-      この記録はエビデンスとして保管されます。<br>
-      速やかなご送金をお願いいたします。
-    </div>
- 
-    <button class="modal-confirm-btn" onclick="confirmRepay()">返済する</button>
-  </div>
-</div>
- 
-<div class="confetti-container" id="confettiBox"></div>
- 
-<footer>
-  本シミュレーションは単利計算に基づく概算です。実際の法的請求額とは異なる場合があります。<br>
-  © 2026 Strategic Advisory Division — Confidential
-</footer>
- 
-<script>
-// ===== REVEAL OBSERVER =====
-const obs = new IntersectionObserver((entries) => {
-  entries.forEach((e, i) => {
-    if (e.isIntersecting) {
-      setTimeout(() => e.target.classList.add('visible'), i * 60);
-      obs.unobserve(e.target);
-    }
-  });
-}, { threshold: 0.15 });
-document.querySelectorAll('.reveal, .ctx-card').forEach(el => obs.observe(el));
- 
-// ===== BAR ANIMATION =====
-const barObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      const fill = e.target.querySelector('.bar-fill');
-      if (fill) {
-        setTimeout(() => { fill.style.width = fill.dataset.width + '%'; }, 200);
+    </footer>
+  </main>
+
+  <script>
+    "use strict";
+
+    /* ============================================================
+       設定・時刻表データ（情報理工棟 → 新潟方面）
+       ※ この部分は元アプリのまま。実ダイヤに合わせて編集可能。
+       ============================================================ */
+    const MINUTES_IN_DAY = 24 * 60;
+
+    const kioskConfig = {
+      buffer: 3,
+      walks: { bus: 5, univ: 20, uchino: 15 }
+    };
+
+    const schedules = {
+      weekday: {
+        uchino: [
+          "05:26", "06:06", "06:35", "07:06", "07:25", "07:45", "07:54",
+          "08:08", "08:21", "08:51", "09:09", "09:30", "09:48", "10:11",
+          "10:31", "10:51", "11:11", "11:31", "11:51", "12:11", "12:31",
+          "12:51", "13:11", "13:31", "13:51", "14:11", "14:31", "14:51",
+          "15:11", "15:26", "15:50", "16:07", "16:28", "16:55", "17:10",
+          "17:31", "17:52", "18:10", "18:35", "18:53", "19:12", "19:35",
+          "19:54", "20:30", "20:52", "21:12", "21:32", "21:50", "22:10",
+          "22:31", "22:54"
+        ],
+        univ: [
+          "05:30", "06:09", "06:38", "07:09", "07:29", "07:48", "07:57",
+          "08:12", "08:24", "08:54", "09:13", "09:33", "09:52", "10:15",
+          "10:35", "10:55", "11:15", "11:35", "11:55", "12:15", "12:34",
+          "12:55", "13:14", "13:35", "13:55", "14:14", "14:35", "14:55",
+          "15:15", "15:30", "15:53", "16:11", "16:32", "16:58", "17:14",
+          "17:35", "17:55", "18:14", "18:38", "18:56", "19:15", "19:39",
+          "19:57", "20:33", "20:55", "21:15", "21:36", "21:53", "22:13",
+          "22:34", "22:58", "23:14"
+        ],
+        bus: [
+          "05:54", "06:30", "06:51", "07:03", "07:20", "07:40", "07:56",
+          "08:16", "08:24", "08:33", "09:00", "09:20", "09:30", "09:50",
+          "10:10", "10:25", "11:00", "11:10", "11:30", "12:01", "12:11",
+          "12:21", "12:36", "12:51", "13:16", "13:41", "14:11", "14:41",
+          "15:11", "15:46", "16:00", "16:20", "16:30", "16:40", "17:10",
+          "17:50", "18:20", "18:35", "18:58", "19:23", "19:58", "20:38",
+          "21:25", "21:50", "22:17", "22:44"
+        ]
       }
-      barObs.unobserve(e.target);
-    }
-  });
-}, { threshold: 0.3 });
-document.querySelectorAll('.bar-row').forEach(el => barObs.observe(el));
- 
-// ===== SAVINGS COUNTER =====
-const savingsObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      animateCounter(document.getElementById('savingsCounter'), 0, 5940, 5000);
-      savingsObs.unobserve(e.target);
-    }
-  });
-}, { threshold: 0.5 });
-savingsObs.observe(document.getElementById('savingsCounter'));
- 
-function animateCounter(el, start, end, duration) {
-  const startTime = performance.now();
-  function update(now) {
-    const elapsed = now - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3);
-    const current = Math.round(start + (end - start) * eased);
-    el.textContent = '¥' + current.toLocaleString();
-    if (progress < 1) requestAnimationFrame(update);
-  }
-  requestAnimationFrame(update);
-}
- 
-// ===== CHART (Pure Canvas) =====
-const chartObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      drawChart();
-      chartObs.unobserve(e.target);
-    }
-  });
-}, { threshold: 0.3 });
-chartObs.observe(document.getElementById('mainChart'));
- 
-function drawChart() {
-  const canvas = document.getElementById('mainChart');
-  const ctx = canvas.getContext('2d');
-  const dpr = window.devicePixelRatio || 1;
- 
-  const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * dpr;
-  canvas.height = 350 * dpr;
-  ctx.scale(dpr, dpr);
- 
-  const W = rect.width;
-  const H = 350;
-  const pad = { top: 20, right: 20, bottom: 40, left: 65 };
-  const cw = W - pad.left - pad.right;
-  const ch = H - pad.top - pad.bottom;
- 
-  // Data: monthly totals (principal + accumulated interest)
-  const months = ['10月', '11月', '12月', '1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月'];
-  const principal = 66000;
-  const rates = [
-    { rate: 0, color: '#16a34a', label: '0%' },
-    { rate: 0.03, color: '#0d9488', label: '3%' },
-    { rate: 0.14, color: '#d97706', label: '14%' },
-    { rate: 0.18, color: '#dc2626', label: '18%' },
-  ];
- 
-  // Calculate values
-  const datasets = rates.map(r => ({
-    ...r,
-    values: months.map((_, i) => principal + principal * r.rate * (i / 12))
-  }));
- 
-  const allValues = datasets.flatMap(d => d.values);
-  const minVal = 65000;
-  const maxVal = Math.ceil(Math.max(...allValues) / 1000) * 1000 + 1000;
- 
-  function xPos(i) { return pad.left + (i / (months.length - 1)) * cw; }
-  function yPos(v) { return pad.top + ch - ((v - minVal) / (maxVal - minVal)) * ch; }
- 
-  // Grid lines
-  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-  ctx.lineWidth = 1;
-  const gridSteps = 5;
-  for (let i = 0; i <= gridSteps; i++) {
-    const v = minVal + (maxVal - minVal) * (i / gridSteps);
-    const y = yPos(v);
-    ctx.beginPath();
-    ctx.moveTo(pad.left, y);
-    ctx.lineTo(W - pad.right, y);
-    ctx.stroke();
- 
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.font = '11px "DM Mono", monospace';
-    ctx.textAlign = 'right';
-    ctx.fillText('¥' + Math.round(v).toLocaleString(), pad.left - 8, y + 4);
-  }
- 
-  // X labels
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  ctx.font = '10px "Noto Sans JP", sans-serif';
-  ctx.textAlign = 'center';
-  months.forEach((m, i) => {
-    if (i % 2 === 0 || i === months.length - 1) {
-      ctx.fillText(m, xPos(i), H - pad.bottom + 20);
-    }
-  });
- 
-  // Animate lines
-  let progress = 0;
-  const animDuration = 2000;
-  const startTime = performance.now();
- 
-  function animate(now) {
-    const elapsed = now - startTime;
-    progress = Math.min(elapsed / animDuration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3);
- 
-    // Clear lines area
-    ctx.clearRect(pad.left - 1, pad.top - 1, cw + 2, ch + 2);
- 
-    // Redraw grid
-    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= gridSteps; i++) {
-      const v = minVal + (maxVal - minVal) * (i / gridSteps);
-      const y = yPos(v);
-      ctx.beginPath();
-      ctx.moveTo(pad.left, y);
-      ctx.lineTo(W - pad.right, y);
-      ctx.stroke();
-    }
- 
-    // "Now" marker at month index 6 (April 2026)
-    const nowX = xPos(6);
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(nowX, pad.top);
-    ctx.lineTo(nowX, pad.top + ch);
-    ctx.stroke();
-    ctx.setLineDash([]);
- 
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.font = '9px "Noto Sans JP", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('← 現在（6ヶ月経過）', nowX + 50, pad.top + 12);
- 
-    // Draw each line
-    const drawPoints = Math.floor(eased * (months.length - 1)) + 1;
- 
-    datasets.forEach((ds, di) => {
-      ctx.strokeStyle = ds.color;
-      ctx.lineWidth = di === 0 ? 3 : 2;
-      ctx.globalAlpha = di === 0 ? 1 : 0.7;
-      ctx.beginPath();
- 
-      for (let i = 0; i < drawPoints && i < ds.values.length; i++) {
-        const x = xPos(i);
-        const y = yPos(ds.values[i]);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+    };
+    schedules.saturday = schedules.weekday;
+
+    const routes = [
+      {
+        id: "bus", stop: "新大西門", routeLabel: "W21 西小針線",
+        destination: "古町・万代シティ経由 新潟駅", vehicle: "バス", duration: 41,
+        tag: "BUS", serviceClass: "bus", lane: "停留所", shortLine: "Niigata Kotsu"
+      },
+      {
+        id: "univ", stop: "新潟大学前駅", routeLabel: "JR越後線",
+        destination: "白山・新潟方面", vehicle: "電車", duration: 22,
+        tag: "JR", serviceClass: "jr", lane: "1番線", shortLine: "Echigo Line"
+      },
+      {
+        id: "uchino", stop: "内野駅", routeLabel: "JR越後線",
+        destination: "白山・新潟方面", vehicle: "電車", duration: 25,
+        tag: "JR", serviceClass: "alt", lane: "1番線", shortLine: "Echigo Line"
       }
-      ctx.stroke();
- 
-      // End dot
-      if (drawPoints > 0) {
-        const lastI = Math.min(drawPoints - 1, ds.values.length - 1);
-        ctx.beginPath();
-        ctx.arc(xPos(lastI), yPos(ds.values[lastI]), 4, 0, Math.PI * 2);
-        ctx.fillStyle = ds.color;
-        ctx.globalAlpha = 1;
-        ctx.fill();
-      }
- 
-      // Label at end
-      if (progress >= 0.95) {
-        const lastVal = ds.values[ds.values.length - 1];
-        ctx.fillStyle = ds.color;
-        ctx.font = 'bold 11px "DM Mono", monospace';
-        ctx.textAlign = 'left';
-        ctx.globalAlpha = 1;
-        ctx.fillText('¥' + Math.round(lastVal).toLocaleString(), xPos(months.length - 1) + 8, yPos(lastVal) + 4);
-      }
-    });
- 
-    // Fill area between 0% and 18%
-    if (drawPoints > 1) {
-      ctx.globalAlpha = 0.06;
-      ctx.beginPath();
-      for (let i = 0; i < drawPoints; i++) {
-        const x = xPos(i);
-        if (i === 0) ctx.moveTo(x, yPos(datasets[0].values[i]));
-        else ctx.lineTo(x, yPos(datasets[0].values[i]));
-      }
-      for (let i = drawPoints - 1; i >= 0; i--) {
-        ctx.lineTo(xPos(i), yPos(datasets[3].values[i]));
-      }
-      ctx.closePath();
-      ctx.fillStyle = '#dc2626';
-      ctx.fill();
-      ctx.globalAlpha = 1;
+    ];
+
+    const state = {
+      liveStatus: null,
+      dayType: localDayType(),
+      buffer: kioskConfig.buffer,
+      walks: { ...kioskConfig.walks }
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const pad2 = (n) => String(n).padStart(2, "0");
+
+    /* ============================================================
+       時刻計算ユーティリティ
+       ============================================================ */
+    function toMinutes(time) {
+      const [hour, minute] = time.split(":").map(Number);
+      return hour * 60 + minute;
     }
- 
-    if (progress < 1) requestAnimationFrame(animate);
-  }
- 
-  requestAnimationFrame(animate);
-}
- 
-// ===== MODAL =====
-function openModal() {
-  const overlay = document.getElementById('modalOverlay');
-  const now = new Date();
-  const y = now.getFullYear();
-  const mo = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  const h = String(now.getHours()).padStart(2, '0');
-  const mi = String(now.getMinutes()).padStart(2, '0');
-  const s = String(now.getSeconds()).padStart(2, '0');
-  document.getElementById('modalTimestamp').textContent =
-    `${y}/${mo}/${d}  ${h}:${mi}:${s}`;
-  overlay.classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
- 
-function closeModal(e) {
-  if (e.target === document.getElementById('modalOverlay')) {
-    document.getElementById('modalOverlay').classList.remove('active');
-    document.body.style.overflow = '';
-  }
-}
- 
-function confirmRepay() {
-  launchConfetti();
-  const btn = document.querySelector('.modal-confirm-btn');
-  btn.textContent = 'きちんと連絡してくださいね';
-  btn.style.background = '#0d9488';
-  btn.disabled = true;
-  btn.style.cursor = 'default';
-}
- 
-function launchConfetti() {
-  const box = document.getElementById('confettiBox');
-  const colors = ['#dc2626','#16a34a','#0d9488','#d97706','#3b82f6','#8b5cf6','#ec4899','#f59e0b'];
-  for (let i = 0; i < 80; i++) {
-    const c = document.createElement('div');
-    c.className = 'confetti';
-    c.style.left = Math.random() * 100 + '%';
-    c.style.background = colors[Math.floor(Math.random() * colors.length)];
-    c.style.width = (Math.random() * 8 + 4) + 'px';
-    c.style.height = (Math.random() * 8 + 4) + 'px';
-    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
-    c.style.animation = `confettiFall ${Math.random() * 2 + 2}s ${Math.random() * 0.5}s ease-out forwards`;
-    box.appendChild(c);
-  }
-  setTimeout(() => { box.innerHTML = ''; }, 5000);
-}
- 
-// Redraw on resize
-let resizeTimer;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(drawChart, 200);
-});
-</script>
+
+    function formatMinutes(total) {
+      const normalized = ((total % MINUTES_IN_DAY) + MINUTES_IN_DAY) % MINUTES_IN_DAY;
+      return `${pad2(Math.floor(normalized / 60))}:${pad2(normalized % 60)}`;
+    }
+
+    function getNowMinutes() {
+      const now = new Date();
+      return now.getHours() * 60 + now.getMinutes();
+    }
+
+    function nextTimes(times, nowMinutes, count = 4) {
+      const expanded = times
+        .map((time) => toMinutes(time))
+        .concat(times.map((time) => toMinutes(time) + MINUTES_IN_DAY));
+      return expanded.filter((time) => time >= nowMinutes).slice(0, count);
+    }
+
+    function evaluateSlack(slack) {
+      if (slack < 0) {
+        return { label: "見送り", tone: "red", copy: "今から歩くと間に合わない計算です。" };
+      }
+      if (slack <= 3) {
+        return { label: "全力", tone: "red", copy: "ほぼ即出発。寄り道はできません。" };
+      }
+      if (slack <= 7) {
+        return { label: "急ぎ", tone: "amber", copy: "早歩きで向かう想定です。" };
+      }
+      if (slack <= 12) {
+        return { label: "早歩き", tone: "blue", copy: "少し急げば乗りやすい候補です。" };
+      }
+      return { label: "余裕あり", tone: "green", copy: "通常歩行でも間に合いやすい候補です。" };
+    }
+
+    function toneToPillClass(tone) {
+      return { green: "signal-green", blue: "signal-blue", amber: "signal-amber", red: "signal-red" }[tone];
+    }
+
+    function slackLabel(slack) {
+      return slack < 0 ? `${Math.abs(slack)}分不足` : `残り${slack}分`;
+    }
+
+    function slackClass(slack) {
+      if (slack < 0) return "bad";
+      if (slack <= 7) return "warn";
+      return "good";
+    }
+
+    function summarizeStatus(message, limit = 150) {
+      if (!message) return "取得できませんでした。";
+      const compact = message.replace(/\s+/g, " ").trim();
+      return compact.length > limit ? `${compact.slice(0, limit).trim()}…` : compact;
+    }
+
+    function boardRowLimit() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      if (w >= 1700 && h >= 900) return 9;
+      if (w >= 1400 && h >= 820) return 8;
+      if (w >= 1280 && h >= 760) return 7;
+      if (w >= 1024 && h >= 700) return 6;
+      if (w >= 760  && h >= 900) return 6;
+      return 5;
+    }
+
+    const rowKey = (row) => `${row.id}-${row.departure}`;
+
+    function selectBoardRows(rows, limit) {
+      const selected = [];
+      const seen = new Set();
+      const reachable = rows.filter((row) => row.slack >= 0);
+      const openingCount = limit >= 6 ? 2 : 1;
+      const reachableQuota = Math.min(reachable.length, Math.max(1, limit - openingCount));
+
+      const pushRow = (row) => {
+        const key = rowKey(row);
+        if (seen.has(key) || selected.length >= limit) return;
+        seen.add(key);
+        selected.push(row);
+      };
+
+      rows.slice(0, openingCount).forEach(pushRow);
+      reachable.slice(0, reachableQuota).forEach(pushRow);
+      rows.forEach(pushRow);
+
+      return selected
+        .slice(0, limit)
+        .sort((a, b) => a.departure - b.departure || a.slack - b.slack);
+    }
+
+    function routeSummary(route) {
+      return `${route.stop}まで徒歩${route.walking}分、乗車前バッファ${route.buffer}分込みで、`
+        + `${formatMinutes(route.leave)}までに出れば ${formatMinutes(route.departure)} 発を狙えます。`;
+    }
+
+    function routeCalculations() {
+      const nowMinutes = getNowMinutes();
+      const dayType = state.dayType;
+      const buffer = state.buffer;
+
+      return routes.map((route) => {
+        const walking = state.walks[route.id];
+        const upcoming = nextTimes(schedules[dayType][route.id], nowMinutes, 4);
+        const departure = upcoming[0];
+        const leave = departure - walking - buffer;
+        const slack = leave - nowMinutes;
+        return {
+          ...route, walking, buffer, upcoming, departure, leave, slack,
+          arrival: departure + route.duration,
+          judgement: evaluateSlack(slack)
+        };
+      });
+    }
+
+    function buildDepartureRows(calculations) {
+      const nowMinutes = getNowMinutes();
+      return calculations
+        .flatMap((route) =>
+          route.upcoming.map((departure) => {
+            const leave = departure - route.walking - route.buffer;
+            const slack = leave - nowMinutes;
+            return {
+              ...route, departure, leave, slack,
+              arrival: departure + route.duration,
+              judgement: evaluateSlack(slack)
+            };
+          })
+        )
+        .sort((a, b) => a.departure - b.departure);
+    }
+
+    /* ============================================================
+       描画
+       ============================================================ */
+    function syncWalkDisplays() {
+      $("walkBusDisplay").textContent = `${state.walks.bus}分`;
+      $("walkUnivDisplay").textContent = `${state.walks.univ}分`;
+      $("walkUchinoDisplay").textContent = `${state.walks.uchino}分`;
+    }
+
+    function currentLiveWarning() {
+      if (!state.liveStatus) return "";
+      const warnings = [];
+      if (["delay", "disrupted", "notice", "unknown"].includes(state.liveStatus.jr?.severity)) {
+        warnings.push(`JRは${state.liveStatus.jr.status}`);
+      }
+      if (["delay", "disrupted", "notice", "unknown"].includes(state.liveStatus.bus?.severity)) {
+        warnings.push(`バスは${state.liveStatus.bus.status}`);
+      }
+      return warnings.length
+        ? ` 最新情報では ${warnings.join("、")} のため、現地の表示もご確認ください。`
+        : "";
+    }
+
+    function renderHero(best) {
+      $("statusPill").textContent = best.judgement.label;
+      $("statusPill").className = `pill ${toneToPillClass(best.judgement.tone)}`;
+      $("mainJudgement").textContent = formatMinutes(best.departure);
+      $("bestRoute").textContent = `${best.stop} ／ ${best.destination}`;
+      $("mainCopy").textContent = `${routeSummary(best)} ${best.judgement.copy}${currentLiveWarning()}`;
+      $("bestDepart").textContent = formatMinutes(best.departure);
+      $("leaveBy").textContent = formatMinutes(best.leave);
+      $("arriveAt").textContent = formatMinutes(best.arrival);
+      $("bestDescriptor").textContent = `${best.tag} ${best.routeLabel}`;
+    }
+
+    function renderDepartureBoard(rows, best) {
+      const nowMinutes = getNowMinutes();
+      const displayRows = selectBoardRows(rows, boardRowLimit());
+      $("departuresBody").innerHTML = displayRows.map((row) => {
+        const featured = row.id === best.id && row.departure === best.departure;
+        const unreachable = row.slack < 0;
+        return `
+          <article class="board-row ${featured ? "featured" : ""} ${unreachable ? "unreachable" : ""}">
+            <div class="led-time">
+              <strong>${formatMinutes(row.departure)}</strong>
+              <span>${row.departure - nowMinutes}分後</span>
+            </div>
+            <div class="board-service">
+              <span class="service-chip ${row.serviceClass}">${row.tag}</span>
+              <small>${row.shortLine}</small>
+            </div>
+            <div class="board-stop">
+              <strong>${row.stop}</strong>
+              <span>${row.lane} ／ ${row.routeLabel}</span>
+            </div>
+            <div class="board-destination">
+              <strong>${row.destination}</strong>
+              <span>${row.vehicle} ／ 到着目安 ${formatMinutes(row.arrival)}</span>
+            </div>
+            <div class="board-metric board-walk">
+              <strong>${row.walking}分</strong>
+              <span>情報理工棟から</span>
+            </div>
+            <div class="board-metric board-leave">
+              <strong>${formatMinutes(row.leave)}</strong>
+              <span>出発目安</span>
+            </div>
+            <div class="board-slack">
+              <strong class="${slackClass(row.slack)}">${slackLabel(row.slack)}</strong>
+              <span>${row.judgement.label}</span>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderMiniBoard(calculations) {
+      $("miniBoard").innerHTML = calculations.map((route) => `
+        <article class="mini-route">
+          <strong>${route.stop}</strong>
+          <p>${route.routeLabel} ／ ${route.destination}</p>
+          <div class="chip-row">
+            ${route.upcoming.slice(0, 3).map((t) => `<span class="time-chip">${formatMinutes(t)}</span>`).join("")}
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function renderTicker(rows, best) {
+      const headline = rows
+        .slice(0, 6)
+        .map((row) => `${formatMinutes(row.departure)} ${row.stop}→${row.destination}（${slackLabel(row.slack)}）`);
+      const service = [];
+      if (state.liveStatus?.jr?.status)  service.push(`JR越後線 ${state.liveStatus.jr.status}`);
+      if (state.liveStatus?.bus?.status) service.push(`新潟交通 ${state.liveStatus.bus.status}`);
+      service.push(`次発推奨 ${formatMinutes(best.departure)} ${best.stop}`);
+      const notes = state.liveStatus?.notes?.length ? state.liveStatus.notes : [];
+      $("tickerText").textContent =
+        `${headline.join("　／　")}　／　${service.join("　／　")}` +
+        (notes.length ? `　／　${notes.join("　／　")}` : "");
+    }
+
+    function render() {
+      syncWalkDisplays();
+      const calculations = routeCalculations();
+      const rows = buildDepartureRows(calculations);
+      const best = rows.find((row) => row.slack >= 0) || rows[0];
+      renderHero(best);
+      renderDepartureBoard(rows, best);
+      renderMiniBoard(calculations);
+      renderTicker(rows, best);
+    }
+
+    function setPill(id, text, severity = "normal") {
+      const pill = $(id);
+      if (!pill) return;
+      pill.textContent = text;
+      pill.className = `pill ${severity}`;
+    }
+
+    /* ============================================================
+       カレンダー（祝日 API をブラウザから直接取得）
+       ============================================================ */
+    function localDayType() {
+      const day = new Date().getDay();
+      return (day === 0 || day === 6) ? "saturday" : "weekday";
+    }
+
+    function buildCalendar(holidays) {
+      const now = new Date();
+      const date = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+      const weekday = now.getDay();
+      const holidayName = holidays ? holidays[date] : null;
+      const isHoliday = Boolean(holidayName);
+      const isWeekend = weekday === 0 || weekday === 6;
+      const dayType = (isHoliday || isWeekend) ? "saturday" : "weekday";
+      return {
+        date, weekday,
+        is_holiday: isHoliday,
+        holiday_name: holidayName,
+        day_type: dayType,
+        label: dayType === "weekday" ? "平日ダイヤ" : "土曜・休日ダイヤ"
+      };
+    }
+
+    function applyCalendar(calendar) {
+      const cal = calendar || buildCalendar(null);
+      state.dayType = cal.day_type;
+      setPill("calendarBadge", cal.label, "normal");
+      setPill("calendarStatusBadge", cal.label, "normal");
+      const holidayText = cal.holiday_name ? `（${cal.holiday_name}）` : "";
+      $("calendarStatus").textContent =
+        `${cal.date}${holidayText} は ${cal.label} として案内しています。`;
+    }
+
+    async function loadCalendar() {
+      try {
+        const res = await fetch("https://holidays-jp.github.io/api/v1/date.json", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        applyCalendar(buildCalendar(await res.json()));
+      } catch (_) {
+        applyCalendar(buildCalendar(null));   // 取得失敗時は曜日のみで判定
+      }
+    }
+
+    /* ============================================================
+       運行情報（GitHub Actions が生成した静的 JSON を取得）
+       ============================================================ */
+    function renderLiveStatus(data) {
+      state.liveStatus = data;
+      setPill("jrBadge",  `JR ${data.jr?.status || "不明"}`,  data.jr?.severity  || "unknown");
+      setPill("busBadge", `BUS ${data.bus?.status || "不明"}`, data.bus?.severity || "unknown");
+      setPill("jrStatusBadge",  data.jr?.status  || "不明", data.jr?.severity  || "unknown");
+      setPill("busStatusBadge", data.bus?.status || "不明", data.bus?.severity || "unknown");
+      $("jrStatus").textContent =
+        `${summarizeStatus(data.jr?.message)}${data.jr?.updated_at ? `　／　公式更新 ${data.jr.updated_at}` : ""}`;
+      $("busStatus").textContent =
+        `${summarizeStatus(data.bus?.message)}${data.bus?.updated_at ? `　／　公式更新 ${data.bus.updated_at}` : ""}`;
+      if (data.fetched_at) {
+        const t = new Date(data.fetched_at);
+        $("fetchedAt").textContent =
+          `自動取得 ${t.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}`;
+      } else {
+        $("fetchedAt").textContent = "取得待ち";
+      }
+      render();
+    }
+
+    async function loadLiveStatus() {
+      try {
+        const res = await fetch(`./data/status.json?_=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        renderLiveStatus(await res.json());
+      } catch (_) {
+        // 取得に失敗しても発車案内は内蔵時刻表で動作させる
+        setPill("jrBadge",  "JR 取得失敗",  "unknown");
+        setPill("busBadge", "BUS 取得失敗", "unknown");
+        setPill("jrStatusBadge",  "取得失敗", "unknown");
+        setPill("busStatusBadge", "取得失敗", "unknown");
+        $("jrStatus").textContent  = "運行情報を取得できませんでした。発車案内は内蔵時刻表で表示しています。";
+        $("busStatus").textContent = "運行情報を取得できませんでした。";
+        $("fetchedAt").textContent = "取得失敗";
+        render();
+      }
+    }
+
+    /* ============================================================
+       時計
+       ============================================================ */
+    function updateClock() {
+      const now = new Date();
+      $("liveClock").textContent = now.toLocaleTimeString("ja-JP", {
+        hour: "2-digit", minute: "2-digit"
+      });
+      $("liveDate").textContent = now.toLocaleDateString("ja-JP", {
+        year: "numeric", month: "long", day: "numeric", weekday: "short"
+      });
+    }
+
+    /* ============================================================
+       起動
+       ============================================================ */
+    updateClock();
+    render();
+    loadCalendar();
+    loadLiveStatus();
+
+    setInterval(updateClock, 1000);          // 時計
+    setInterval(render, 30000);              // 発車案内の再計算
+    setInterval(loadLiveStatus, 180000);     // 運行情報 3分ごと
+    setInterval(loadCalendar, 1800000);      // ダイヤ判定 30分ごと
+    window.addEventListener("resize", render);
+  </script>
 </body>
 </html>

@@ -1,0 +1,22 @@
+{
+  "fetched_at": null,
+  "jr": {
+    "ok": false,
+    "source": "https://traininfo.jreast.co.jp/train_info/line.aspx?gid=5&lineid=echigoline",
+    "status": "情報取得待ち",
+    "severity": "unknown",
+    "updated_at": null,
+    "message": "GitHub Actions による初回の自動取得を待っています。"
+  },
+  "bus": {
+    "ok": false,
+    "source": "https://www.niigata-kotsu.co.jp/~noriai/status/",
+    "status": "情報取得待ち",
+    "severity": "unknown",
+    "updated_at": null,
+    "message": "GitHub Actions による初回の自動取得を待っています。"
+  },
+  "notes": [
+    "この JSON は GitHub Actions が15分ごとに自動更新します。"
+  ]
+}
