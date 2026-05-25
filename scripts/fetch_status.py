@@ -8,6 +8,7 @@ HTTP サーバー機能を除いたもの。標準ライブラリのみで動作
 from __future__ import annotations
 
 import json
+import random
 import re
 import time
 from datetime import datetime
@@ -46,8 +47,13 @@ BROWSER_HEADERS = {
 }
 
 
-def fetch_text(url: str, timeout: int = 12, retries: int = 2) -> str:
-    """URL を取得して本文テキストを返す。一時的な失敗に備えてリトライする。"""
+def fetch_text(url: str, timeout: int = 12, retries: int = 4) -> str:
+    """URL を取得して本文テキストを返す。
+
+    JR 東日本サイトは Akamai 配下で、住宅IPからでも稀に 403 を返す
+    （データセンターIPからはほぼ常に 403）。一時的な遮断を吸収するため、
+    指数バックオフ（ジッター付き）で粘り強くリトライする。
+    """
     last_exc: Exception = URLError("unknown error")
     for attempt in range(retries + 1):
         try:
@@ -58,7 +64,8 @@ def fetch_text(url: str, timeout: int = 12, retries: int = 2) -> str:
         except (TimeoutError, URLError, OSError) as exc:
             last_exc = exc
             if attempt < retries:
-                time.sleep(2)
+                # 2,4,8,16 秒 + 0〜1.5 秒のジッターで待つ
+                time.sleep(2 ** (attempt + 1) + random.uniform(0, 1.5))
     raise last_exc
 
 
@@ -70,19 +77,58 @@ def html_to_text(html: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def parse_jr_status() -> dict:
+def load_previous() -> dict:
+    """前回生成した status.json を読み込む。無ければ空 dict。"""
+    try:
+        return json.loads(OUTPUT.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+# 実データが取れていない状態を表すステータス。これらは前回値として
+# 再利用しない（再利用すると失敗状態が固定化してしまうため）。
+_NON_DATA_STATUS = {"取得失敗", "要確認"}
+
+
+def stale_from_previous(
+    prev: dict, key: str, exc: Exception, source: str, label: str
+) -> dict:
+    """取得失敗時に、前回の正常値があればそれを「前回値」として返す。
+
+    一時的な 403 でサイネージが空欄/「取得失敗」になるのを防ぎ、
+    直近の正常値に「最新取得は失敗」の注記を添えて表示し続ける。
+    前回も失敗していた場合のみ「取得失敗」を返す。
+    """
+    prev_block = (prev or {}).get(key) or {}
+    prev_status = prev_block.get("status")
+    if prev_status and prev_status not in _NON_DATA_STATUS:
+        note = "最新の取得に失敗したため前回の情報を表示しています。"
+        prev_fetched = (prev or {}).get("fetched_at")
+        if prev_fetched:
+            note += f"（前回取得 {prev_fetched}）"
+        return {
+            **prev_block,
+            "ok": False,
+            "stale": True,
+            "source": source,
+            "message": f"{note} {prev_block.get('message', '')}".strip(),
+        }
+    return {
+        "ok": False,
+        "source": source,
+        "status": "取得失敗",
+        "severity": "unknown",
+        "updated_at": None,
+        "message": f"{label}の運行情報を取得できませんでした: {exc}",
+    }
+
+
+def parse_jr_status(prev: dict | None = None) -> dict:
     """信越エリアの運行情報ページから越後線の状態を取得する。"""
     try:
         html = fetch_text(JR_AREA_URL)
     except (TimeoutError, URLError, OSError) as exc:
-        return {
-            "ok": False,
-            "source": JR_LINE_PAGE,
-            "status": "取得失敗",
-            "severity": "unknown",
-            "updated_at": None,
-            "message": f"JR東日本の運行情報を取得できませんでした: {exc}",
-        }
+        return stale_from_previous(prev or {}, "jr", exc, JR_LINE_PAGE, "JR東日本")
 
     full_text = html_to_text(html)
     updated_match = re.search(
@@ -144,18 +190,13 @@ def parse_jr_status() -> dict:
     }
 
 
-def parse_bus_status() -> dict:
+def parse_bus_status(prev: dict | None = None) -> dict:
     try:
         text = html_to_text(fetch_text(NIIGATA_KOTSU_STATUS_URL))
     except (TimeoutError, URLError, OSError) as exc:
-        return {
-            "ok": False,
-            "source": NIIGATA_KOTSU_STATUS_URL,
-            "status": "取得失敗",
-            "severity": "unknown",
-            "updated_at": None,
-            "message": f"新潟交通の運行情報を取得できませんでした: {exc}",
-        }
+        return stale_from_previous(
+            prev or {}, "bus", exc, NIIGATA_KOTSU_STATUS_URL, "新潟交通"
+        )
 
     time_match = re.search(
         r"(\d{1,2}月\d{1,2}日\s*\d{1,2}時\d{1,2}分|\d{1,2}時\d{1,2}分)\s*時点", text
@@ -190,11 +231,11 @@ def parse_bus_status() -> dict:
     }
 
 
-def build_status() -> dict:
+def build_status(prev: dict | None = None) -> dict:
     return {
         "fetched_at": datetime.now(JST).isoformat(timespec="seconds"),
-        "jr": parse_jr_status(),
-        "bus": parse_bus_status(),
+        "jr": parse_jr_status(prev),
+        "bus": parse_bus_status(prev),
         "notes": [
             "JR東日本の運行情報は30分以上の遅れ、または見込みが中心です。",
             "新潟交通の公式運行情報は運休便や大幅な遅れが中心で、"
@@ -204,8 +245,9 @@ def build_status() -> dict:
 
 
 def main() -> None:
+    prev = load_previous()
     try:
-        data = build_status()
+        data = build_status(prev)
     except Exception as exc:  # noqa: BLE001 - 何があっても JSON は必ず書き出す
         data = {
             "fetched_at": datetime.now(JST).isoformat(timespec="seconds"),

@@ -23,18 +23,18 @@ concurrency:
 
 jobs:
   update:
-    runs-on: ubuntu-latest
+    # 住宅IPで実行するためのセルフホスト runner で動かす。
+    # JR東日本サイトは Akamai 配下で、GitHub ホストランナー（Azure データセンターIP）
+    # からは 403 で弾かれるため。Mac 上の runner（ラベル ryosasa-mac）が拾う。
+    runs-on: [self-hosted, ryosasa-mac]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
       - name: Fetch transit status
-        run: python scripts/fetch_status.py
+        # macOS 同梱の python3（3.9+/zoneinfo 対応）を使う。標準ライブラリのみで動くため
+        # setup-python は不要（セルフホスト runner のツールキャッシュにも依存しない）。
+        run: /usr/bin/python3 scripts/fetch_status.py
 
       - name: Commit updated status
         run: |

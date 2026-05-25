@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-05-25T10:52:14+09:00",
+  "fetched_at": "2026-05-25T13:54:28+09:00",
   "jr": {
-    "ok": false,
+    "ok": true,
     "source": "https://traininfo.jreast.co.jp/train_info/line.aspx?gid=5&lineid=echigoline",
-    "status": "取得失敗",
-    "severity": "unknown",
-    "updated_at": null,
-    "message": "JR東日本の運行情報を取得できませんでした: HTTP Error 403: Forbidden"
+    "status": "お知らせあり",
+    "severity": "notice",
+    "updated_at": "2026年5月25日 13時53分 現在",
+    "message": "越後線は、昼間集中工事のため、５月２０日（水）～２２日（金）、２６日（火）～２９日（金）の日中時間帯に、柏崎～吉田駅間の上下線で一部列車を運休します。なお、バス等による代行輸送は行いません。詳しくはＪＲ東日本のホームページ運行情報の信越エリアお知らせ欄からご覧いただけます。"
   },
   "bus": {
     "ok": true,
