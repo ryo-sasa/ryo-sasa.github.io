@@ -1,11 +1,11 @@
 {
-  "fetched_at": "2026-05-25T22:55:18+09:00",
+  "fetched_at": "2026-05-26T01:15:42+09:00",
   "jr": {
     "ok": true,
     "source": "https://transit.yahoo.co.jp/diainfo/477/0",
     "status": "お知らせあり",
     "severity": "notice",
-    "updated_at": "5月25日 22時54分 更新",
+    "updated_at": "5月26日 1時15分 更新",
     "message": "保守工事の影響で、29日までの火〜金曜日、10:45頃〜13:45頃まで、柏崎〜吉田駅間の列車が運休となります。 （5月25日 5時0分掲載）"
   },
   "bus": {
