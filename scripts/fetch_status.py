@@ -23,14 +23,12 @@ ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "data" / "status.json"
 JST = ZoneInfo("Asia/Tokyo")
 
-# 越後線の運行情報は「信越エリア」のまとめページに掲載されている。
-# 旧 line.aspx の個別ページは構造が変わりやすいため、エリアページ内の
-# 越後線リンク（href に lineid=echigoline を含む <a>）から状態を読み取る。
-JR_AREA_URL = "https://traininfo.jreast.co.jp/train_info/shinetsu.aspx"
-JR_LINE_ID = "echigoline"  # 越後線
-JR_LINE_PAGE = (
-    "https://traininfo.jreast.co.jp/train_info/line.aspx?gid=5&lineid=echigoline"
-)
+# 越後線の運行情報源。
+# JR東日本公式サイト（traininfo.jreast.co.jp）は Akamai 配下で、データセンターIP
+# （GitHub Actions = Azure）からは常に HTTP 403 で弾かれる。住宅IPからしか取れず
+# 24時間運用に向かないため、クラウドから到達できる Yahoo!路線情報（Yahoo 自前CDN・
+# 非Akamai）を一次ソースに使う。路線ID 477 = 越後線。
+YAHOO_ECHIGO_URL = "https://transit.yahoo.co.jp/diainfo/477/0"
 NIIGATA_KOTSU_STATUS_URL = "https://www.niigata-kotsu.co.jp/~noriai/status/"
 
 
@@ -124,65 +122,65 @@ def stale_from_previous(
 
 
 def parse_jr_status(prev: dict | None = None) -> dict:
-    """信越エリアの運行情報ページから越後線の状態を取得する。"""
+    """Yahoo!路線情報の越後線ページから運行状態を取得する。"""
     try:
-        html = fetch_text(JR_AREA_URL)
+        html = fetch_text(YAHOO_ECHIGO_URL)
     except (TimeoutError, URLError, OSError) as exc:
-        return stale_from_previous(prev or {}, "jr", exc, JR_LINE_PAGE, "JR東日本")
+        return stale_from_previous(prev or {}, "jr", exc, YAHOO_ECHIGO_URL, "越後線")
 
-    full_text = html_to_text(html)
+    # 「5月25日 14時18分 更新」を拾う。時刻と「更新」の間に HTML コメントや
+    # タグが挟まる（例: 14時18分<!-- -->更新）ため、それらを読み飛ばす。
     updated_match = re.search(
-        r"(\d{4}年\d{1,2}月\d{1,2}日\s*\d{1,2}時\d{1,2}分\s*現在)", full_text
-    )
-    updated_at = updated_match.group(1) if updated_match else None
-
-    # 越後線のステータスリンク（href に lineid=echigoline を含む <a>）を探す。
-    # リンクのテキストが「平常運転」「お知らせ 越後線は…」等そのまま状態を表す。
-    link_match = re.search(
-        r"<a\b[^>]*lineid=" + re.escape(JR_LINE_ID) + r"\b[^>]*>([\s\S]*?)</a>",
+        r"(\d{1,2}月\d{1,2}日\s*\d{1,2}時\d{1,2}分)(?:<!--.*?-->|<[^>]*>|\s)*更新",
         html,
-        flags=re.I,
     )
-    if not link_match:
+    updated_at = f"{updated_match.group(1)} 更新" if updated_match else None
+
+    # 運行情報ブロック（#mdServiceStatus 内の <dl>…</dl>）を取り出す。
+    block_match = re.search(r'id="mdServiceStatus"[\s\S]*?</dl>', html)
+    if not block_match:
         return {
             "ok": False,
-            "source": JR_LINE_PAGE,
+            "source": YAHOO_ECHIGO_URL,
             "status": "要確認",
             "severity": "unknown",
             "updated_at": updated_at,
             "message": (
-                "JR運行情報ページの構造が変わった可能性があります。"
+                "Yahoo!路線情報の構造が変わった可能性があります。"
                 "公式ページで越後線の状況をご確認ください。"
             ),
         }
+    block = block_match.group(0)
+    dd_class_match = re.search(r'<dd[^>]*class="([^"]*)"', block)
+    dd_class = dd_class_match.group(1) if dd_class_match else ""
+    dt_match = re.search(r"<dt>([\s\S]*?)</dt>", block)
+    dt_label = html_to_text(dt_match.group(1)) if dt_match else ""
+    dd_match = re.search(r"<dd[^>]*>([\s\S]*?)</dd>", block)
+    body = html_to_text(dd_match.group(1)) if dd_match else ""
 
-    status_text = html_to_text(link_match.group(1))
-
-    # JR 東日本のラベル（先頭語）で重大度を判定する。
-    # お知らせ本文中に「運休」を含むことがあるため、必ず先頭語で見る。
-    if status_text.startswith("平常運転"):
+    # 重大度は Yahoo の <dt> ラベル（平常運転/遅延/運転見合わせ/運休/その他…）を
+    # 一次判定に使う。「その他」等の本文には予定運休等の語が含まれることがあるため、
+    # 本文キーワードではなくラベルで分類する。
+    if "normal" in dd_class or "平常" in dt_label:
         status, severity = "平常運転", "normal"
-        message = "越後線は公式運行情報で平常運転です。"
-    elif status_text.startswith("運転見合わせ"):
+        message = "越後線は平常運転です。（Yahoo!路線情報）"
+    elif "見合" in dt_label:
         status, severity = "運転見合わせ", "disrupted"
-        message = status_text[:260]
-    elif status_text.startswith("運休"):
+        message = (body or dt_label)[:260]
+    elif "運休" in dt_label:
         status, severity = "運休情報あり", "disrupted"
-        message = status_text[:260]
-    elif status_text.startswith("遅延"):
+        message = (body or dt_label)[:260]
+    elif "遅" in dt_label:
         status, severity = "遅延", "delay"
-        message = status_text[:260]
-    elif status_text.startswith("お知らせ"):
-        status, severity = "お知らせあり", "notice"
-        body = status_text[len("お知らせ") :].strip()
-        message = (body or status_text)[:260]
+        message = (body or dt_label)[:260]
     else:
-        status, severity = "要確認", "unknown"
-        message = status_text[:260] or "状態を判定できませんでした。"
+        # 「その他」「運転情報」等のお知らせ。本文をそのまま表示する。
+        status, severity = "お知らせあり", "notice"
+        message = (body or dt_label or "状態を判定できませんでした。")[:260]
 
     return {
         "ok": True,
-        "source": JR_LINE_PAGE,
+        "source": YAHOO_ECHIGO_URL,
         "status": status,
         "severity": severity,
         "updated_at": updated_at,
