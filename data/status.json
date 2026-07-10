@@ -1,11 +1,11 @@
 {
-  "fetched_at": "2026-07-11T01:03:13+09:00",
+  "fetched_at": "2026-07-11T02:58:51+09:00",
   "jr": {
     "ok": true,
     "source": "https://transit.yahoo.co.jp/diainfo/477/0",
     "status": "平常運転",
     "severity": "normal",
-    "updated_at": "7月11日 1時2分 更新",
+    "updated_at": "7月11日 2時58分 更新",
     "message": "越後線は平常運転です。（Yahoo!路線情報）"
   },
   "bus": {
