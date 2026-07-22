@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-07-23T04:40:18+09:00",
+  "fetched_at": "2026-07-23T05:47:34+09:00",
   "jr": {
     "ok": true,
     "source": "https://transit.yahoo.co.jp/diainfo/477/0",
-    "status": "お知らせあり",
-    "severity": "notice",
-    "updated_at": "7月23日 4時39分 更新",
-    "message": "荒天予想の影響で、23日始発から、柏崎〜小島谷駅間の運転を見合わせます。 （7月22日 20時0分掲載）"
+    "status": "運転見合わせ",
+    "severity": "disrupted",
+    "updated_at": "7月23日 5時46分 更新",
+    "message": "荒天予想の影響で、柏崎〜小島谷駅間の運転を見合わせています。 （7月23日 5時0分掲載）"
   },
   "bus": {
     "ok": true,
