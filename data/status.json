@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-07-23T13:29:55+09:00",
+  "fetched_at": "2026-07-23T16:06:27+09:00",
   "jr": {
     "ok": true,
     "source": "https://transit.yahoo.co.jp/diainfo/477/0",
-    "status": "お知らせあり",
-    "severity": "notice",
-    "updated_at": "7月23日 13時29分 更新",
-    "message": "大雨の影響で、一部列車に遅れや運休が出ています。 （7月23日 12時50分掲載）"
+    "status": "平常運転",
+    "severity": "normal",
+    "updated_at": "7月23日 16時5分 更新",
+    "message": "越後線は平常運転です。（Yahoo!路線情報）"
   },
   "bus": {
     "ok": true,
