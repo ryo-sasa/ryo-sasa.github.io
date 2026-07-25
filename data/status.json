@@ -1,11 +1,11 @@
 {
-  "fetched_at": "2026-07-26T07:34:28+09:00",
+  "fetched_at": "2026-07-26T08:40:14+09:00",
   "jr": {
     "ok": true,
     "source": "https://transit.yahoo.co.jp/diainfo/477/0",
     "status": "運転見合わせ",
     "severity": "disrupted",
-    "updated_at": "7月26日 7時33分 更新",
+    "updated_at": "7月26日 8時39分 更新",
     "message": "大雨の影響で、柏崎〜吉田駅間の運転を見合わせています。 （7月26日 6時50分掲載）"
   },
   "bus": {
