@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-07-27T06:35:47+09:00",
+  "fetched_at": "2026-07-27T07:38:55+09:00",
   "jr": {
     "ok": true,
     "source": "https://transit.yahoo.co.jp/diainfo/477/0",
-    "status": "運転見合わせ",
-    "severity": "disrupted",
-    "updated_at": "7月27日 6時34分 更新",
-    "message": "大雨の影響で、内野〜新潟駅間の運転を見合わせています。運転区間の一部列車に運休が出ています。 （7月27日 4時30分掲載）"
+    "status": "お知らせあり",
+    "severity": "notice",
+    "updated_at": "7月27日 7時37分 更新",
+    "message": "大雨の影響で、吉田〜新潟駅間の一部列車に遅れや運休が出ています。 （7月27日 7時15分掲載）"
   },
   "bus": {
     "ok": true,
