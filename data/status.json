@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-07-27T07:38:55+09:00",
+  "fetched_at": "2026-07-27T08:38:39+09:00",
   "jr": {
     "ok": true,
     "source": "https://transit.yahoo.co.jp/diainfo/477/0",
     "status": "お知らせあり",
     "severity": "notice",
-    "updated_at": "7月27日 7時37分 更新",
-    "message": "大雨の影響で、吉田〜新潟駅間の一部列車に遅れや運休が出ています。 （7月27日 7時15分掲載）"
+    "updated_at": "7月27日 8時37分 更新",
+    "message": "大雨の影響で、一部列車に遅れや運休が出ています。 （7月27日 8時0分掲載）"
   },
   "bus": {
     "ok": true,
