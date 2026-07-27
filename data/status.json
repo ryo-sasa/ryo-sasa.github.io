@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-07-27T10:16:11+09:00",
+  "fetched_at": "2026-07-27T14:02:05+09:00",
   "jr": {
     "ok": true,
     "source": "https://transit.yahoo.co.jp/diainfo/477/0",
-    "status": "お知らせあり",
-    "severity": "notice",
-    "updated_at": "7月27日 10時15分 更新",
-    "message": "大雨の影響で、一部列車に遅れや運休が出ています。 （7月27日 8時0分掲載）"
+    "status": "遅延",
+    "severity": "delay",
+    "updated_at": "7月27日 14時1分 更新",
+    "message": "大雨の影響で、一部列車に遅れが出ています。 （7月27日 12時50分掲載）"
   },
   "bus": {
     "ok": true,
