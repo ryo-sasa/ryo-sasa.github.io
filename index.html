@@ -27,7 +27,10 @@
 </div>
 
 <header class="masthead">
-  <div class="wrap">
+  <span class="masthead__frame" aria-hidden="true"></span>
+  <span class="masthead__halo" aria-hidden="true"></span>
+
+  <div class="wrap masthead__inner">
     <p class="masthead__eyebrow">JAPAN &nbsp;·&nbsp; 9 BRANDS &nbsp;·&nbsp; <span id="totalCount">36</span> PROPERTIES</p>
     <h1 class="masthead__title">
       <span class="masthead__title-en">Hilton Roulette</span>
@@ -38,12 +41,17 @@
       日本国内のヒルトン系列ホテルから、<em>地方</em>・<em>ブランド</em>・<em>運営元</em>で対象を絞り込み、ルーレットで行き先を決めます。
     </p>
   </div>
+
+  <a class="scroll-cue" href="#choose">
+    <span class="scroll-cue__label">SCROLL</span>
+    <span class="scroll-cue__line" aria-hidden="true"></span>
+  </a>
 </header>
 
 <main class="wrap">
 
   <!-- ============ Filters ============ -->
-  <section class="panel" aria-labelledby="filters-h">
+  <section class="panel" id="choose" aria-labelledby="filters-h">
     <div class="panel__head">
       <h2 class="panel__title" id="filters-h">ルーレット対象を選ぶ</h2>
       <button type="button" class="ghost-btn" id="resetBtn">条件をリセット</button>
