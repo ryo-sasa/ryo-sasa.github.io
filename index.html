@@ -125,11 +125,23 @@
   <!-- ============ Result ============ -->
   <section class="result-slot" aria-live="polite" aria-atomic="true">
     <article class="ticket" id="ticket" hidden>
-      <div class="ticket__foil" aria-hidden="true"></div>
+      <span class="ticket__foil" aria-hidden="true"></span>
+      <span class="ticket__monogram" id="tMonogram" aria-hidden="true"></span>
+      <span class="ticket__corner ticket__corner--tl" aria-hidden="true"></span>
+      <span class="ticket__corner ticket__corner--tr" aria-hidden="true"></span>
+      <span class="ticket__corner ticket__corner--bl" aria-hidden="true"></span>
+      <span class="ticket__corner ticket__corner--br" aria-hidden="true"></span>
+      <span class="ticket__sparks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+
+      <p class="ticket__no" id="tNo" aria-hidden="true"></p>
+
       <header class="ticket__head">
         <p class="ticket__tier" id="tTier">LUXURY</p>
         <p class="ticket__brand" id="tBrand">コンラッド</p>
       </header>
+
+      <span class="ticket__crest" aria-hidden="true"><i></i><b>&#10022;</b><i></i></span>
+
       <h3 class="ticket__name" id="tName">—</h3>
       <p class="ticket__place" id="tPlace">—</p>
 

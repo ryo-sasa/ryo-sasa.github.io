@@ -508,6 +508,10 @@
     const brand = BRAND_BY_ID.get(h.b) || {};
     const tier = TIERS[brand.tier] || {};
 
+    // ブランド頭文字の透かしと、この端末での通し番号
+    $('tMonogram').textContent = (brand.en || 'H').charAt(0);
+    $('tNo').textContent = 'No. ' + String(state.history.length + 1).padStart(3, '0');
+
     $('tTier').textContent = tier.en || '';
     $('tBrand').textContent = brand.label || '';
     $('tName').textContent = h.n;
