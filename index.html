@@ -1,1262 +1,189 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <link rel="icon" href="data:,">
-  <title>新潟大学 情報理工棟 ／ 新潟方面 発車案内</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HILTON ROULETTE — 今夜の一泊を、運命に委ねる</title>
+<meta name="description" content="日本国内のヒルトン系列ホテルから、地方・ブランド・運営元で絞り込んでルーレットで宿泊先を決めるサイト。結果はLINEでそのまま共有できます。">
+<meta name="theme-color" content="#07070b">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:title" content="HILTON ROULETTE — 今夜の一泊を、運命に委ねる">
+<meta property="og:description" content="日本国内のヒルトン系列ホテルをルーレットで抽選。地方・ブランド・運営元で絞り込めます。">
 
-  <style>
-    :root {
-      color-scheme: dark;
-
-      /* ---- base ---- */
-      --bg: #04070b;
-      --bg-2: #070c12;
-      --board: #04060a;
-      --panel: #0a121a;
-      --panel-2: #0c1722;
-      --frame: #16222c;
-      --frame-2: #233642;
-
-      /* ---- ink ---- */
-      --ink: #ecf3f1;
-      --ink-dim: #87a09b;
-      --ink-faint: #5d7470;
-
-      /* ---- signage palette ---- */
-      --amber: #ffb22e;          /* 発車標 LED アンバー */
-      --amber-glow: rgba(255, 178, 46, 0.30);
-      --amber-soft: rgba(255, 178, 46, 0.13);
-      --jr: #00b25a;             /* JR ブランドグリーン */
-      --jr-soft: rgba(0, 178, 90, 0.14);
-      --bus: #ff7a3c;            /* 新潟交通 オレンジ */
-      --bus-soft: rgba(255, 122, 60, 0.14);
-
-      /* ---- status ---- */
-      --ok: #25c878;
-      --ok-soft: rgba(37, 200, 120, 0.15);
-      --notice: #ffb22e;
-      --notice-soft: rgba(255, 178, 46, 0.15);
-      --delay: #ff9322;
-      --delay-soft: rgba(255, 147, 34, 0.15);
-      --bad: #ff5546;
-      --bad-soft: rgba(255, 85, 70, 0.16);
-      --info: #57c8ff;
-      --info-soft: rgba(87, 200, 255, 0.15);
-      --unknown: #8ba1a1;
-      --unknown-soft: rgba(139, 161, 161, 0.13);
-
-      --display: "Oswald", "DIN Alternate", "Bahnschrift", sans-serif;
-      --jp: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", sans-serif;
-
-      --board-cols:
-        clamp(4.6rem, 7vw, 8.2rem)
-        clamp(4.8rem, 6.6vw, 7.6rem)
-        minmax(0, 1.15fr)
-        minmax(0, 1.6fr)
-        clamp(4rem, 5vw, 6rem)
-        clamp(4.6rem, 5.6vw, 6.8rem)
-        clamp(5rem, 6vw, 7.6rem);
-    }
-
-    * { box-sizing: border-box; }
-
-    html, body { height: 100%; margin: 0; }
-
-    body {
-      font-family: var(--jp);
-      color: var(--ink);
-      background:
-        radial-gradient(120% 80% at 14% 0%, rgba(0, 178, 90, 0.10), transparent 55%),
-        radial-gradient(120% 80% at 90% 0%, rgba(255, 178, 46, 0.08), transparent 55%),
-        linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 60%);
-      overflow: hidden;
-      letter-spacing: 0.01em;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ---------- frame ---------- */
-    .signage {
-      height: 100dvh;
-      display: grid;
-      grid-template-rows: auto minmax(0, 1fr) auto;
-      gap: clamp(8px, 1vmin, 14px);
-      padding:
-        calc(clamp(10px, 1.6vmin, 20px) + env(safe-area-inset-top))
-        calc(clamp(10px, 1.6vmin, 20px) + env(safe-area-inset-right))
-        calc(clamp(10px, 1.6vmin, 20px) + env(safe-area-inset-bottom))
-        calc(clamp(10px, 1.6vmin, 20px) + env(safe-area-inset-left));
-      animation: drift 540s ease-in-out infinite;   /* 焼き付き対策の超低速シフト */
-    }
-
-    @keyframes drift {
-      0%, 100% { transform: translate(0, 0); }
-      25%      { transform: translate(2px, 1px); }
-      50%      { transform: translate(-1px, 2px); }
-      75%      { transform: translate(1px, -2px); }
-    }
-
-    /* ---------- header ---------- */
-    .head {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: clamp(10px, 1.6vw, 22px);
-      align-items: stretch;
-    }
-
-    .identity {
-      display: flex;
-      align-items: center;
-      gap: clamp(10px, 1.4vw, 18px);
-      padding: clamp(10px, 1.5vmin, 18px) clamp(14px, 1.8vw, 24px);
-      border: 1px solid var(--frame);
-      border-radius: 14px;
-      background:
-        linear-gradient(100deg, var(--jr-soft), transparent 60%),
-        var(--panel);
-    }
-
-    .jr-mark {
-      flex: none;
-      width: clamp(9px, 1.1vw, 14px);
-      align-self: stretch;
-      border-radius: 5px;
-      background: linear-gradient(180deg, #18d878, var(--jr));
-      box-shadow: 0 0 16px rgba(0, 178, 90, 0.5);
-    }
-
-    .identity h1 {
-      margin: 0;
-      font-family: var(--jp);
-      font-weight: 700;
-      font-size: clamp(1.4rem, 3vmin, 2.9rem);
-      line-height: 1.05;
-      letter-spacing: 0.02em;
-    }
-
-    .identity .sub {
-      margin: clamp(3px, 0.7vmin, 8px) 0 0;
-      color: var(--ink-dim);
-      font-size: clamp(0.74rem, 1.45vmin, 1.05rem);
-      letter-spacing: 0.06em;
-    }
-
-    .identity .en {
-      display: block;
-      margin-top: 2px;
-      font-family: var(--display);
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.26em;
-      color: var(--ink-faint);
-      font-size: clamp(0.56rem, 1.05vmin, 0.78rem);
-    }
-
-    .clock {
-      display: grid;
-      grid-template-columns: auto auto;
-      grid-template-rows: auto auto;
-      gap: 2px clamp(12px, 1.4vw, 20px);
-      align-items: center;
-      padding: clamp(8px, 1.3vmin, 16px) clamp(14px, 1.7vw, 24px);
-      border: 1px solid var(--frame);
-      border-radius: 14px;
-      background:
-        linear-gradient(260deg, var(--amber-soft), transparent 60%),
-        var(--panel);
-    }
-
-    .clock .time {
-      grid-row: 1 / 3;
-      font-family: var(--display);
-      font-weight: 600;
-      font-size: clamp(3rem, 7vmin, 6.4rem);
-      line-height: 0.86;
-      letter-spacing: 0.03em;
-      color: var(--amber);
-      text-shadow: 0 0 26px var(--amber-glow);
-      font-variant-numeric: tabular-nums;
-    }
-
-    .clock .date {
-      align-self: end;
-      color: var(--ink);
-      font-size: clamp(0.82rem, 1.7vmin, 1.3rem);
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .clock .pill-row {
-      align-self: start;
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    /* ---------- pills ---------- */
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: clamp(3px, 0.6vmin, 7px) clamp(8px, 1vw, 13px);
-      border-radius: 999px;
-      border: 1px solid currentColor;
-      font-size: clamp(0.62rem, 1.18vmin, 0.92rem);
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      white-space: nowrap;
-    }
-    .pill::before {
-      content: "";
-      width: 0.62em; height: 0.62em;
-      border-radius: 50%;
-      background: currentColor;
-      box-shadow: 0 0 8px currentColor;
-    }
-    .pill.normal,    .pill.signal-green { color: var(--ok);      background: var(--ok-soft); }
-    .pill.notice,    .pill.signal-amber { color: var(--notice);  background: var(--notice-soft); }
-    .pill.delay                         { color: var(--delay);   background: var(--delay-soft); }
-    .pill.disrupted, .pill.signal-red   { color: var(--bad);     background: var(--bad-soft); }
-    .pill.signal-blue                   { color: var(--info);    background: var(--info-soft); }
-    .pill.unknown                       { color: var(--unknown); background: var(--unknown-soft); }
-    .pill > span { color: var(--ink); }
-
-    /* ---------- main layout ---------- */
-    .main {
-      display: grid;
-      grid-template-columns: minmax(0, 1.62fr) minmax(280px, 0.95fr);
-      gap: clamp(8px, 1vmin, 14px);
-      min-height: 0;
-    }
-
-    .panel {
-      border: 1px solid var(--frame);
-      border-radius: 16px;
-      background: var(--panel);
-      min-height: 0;
-    }
-
-    .panel-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: clamp(7px, 1vmin, 12px) clamp(11px, 1.4vw, 18px);
-      border-bottom: 1px solid var(--frame);
-    }
-
-    .panel-title {
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-    }
-    .panel-title b {
-      font-size: clamp(0.92rem, 1.8vmin, 1.4rem);
-      font-weight: 700;
-      letter-spacing: 0.03em;
-    }
-    .panel-title em {
-      font-family: var(--display);
-      font-style: normal;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.24em;
-      font-size: clamp(0.56rem, 1.05vmin, 0.78rem);
-      color: var(--ink-faint);
-    }
-
-    .fetched {
-      font-family: var(--display);
-      font-weight: 400;
-      letter-spacing: 0.12em;
-      font-size: clamp(0.6rem, 1.15vmin, 0.86rem);
-      color: var(--ink-dim);
-    }
-
-    /* ---------- board (left) ---------- */
-    .board {
-      display: grid;
-      grid-template-rows: auto auto auto minmax(0, 1fr);
-      overflow: hidden;
-      background:
-        radial-gradient(140% 120% at 50% 0%, rgba(255, 178, 46, 0.05), transparent 60%),
-        var(--board);
-    }
-
-    /* hero — recommended departure */
-    .hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.15fr);
-      gap: clamp(10px, 1.4vw, 22px);
-      align-items: center;
-      margin: clamp(8px, 1vmin, 14px);
-      padding: clamp(10px, 1.5vmin, 20px) clamp(12px, 1.6vw, 22px);
-      border-radius: 13px;
-      border: 1px solid rgba(255, 178, 46, 0.22);
-      background:
-        linear-gradient(110deg, var(--amber-soft), transparent 62%),
-        var(--panel-2);
-    }
-
-    .hero-key {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: clamp(5px, 0.8vmin, 9px);
-      color: var(--amber);
-      font-weight: 700;
-      font-size: clamp(0.72rem, 1.35vmin, 1.02rem);
-      letter-spacing: 0.05em;
-    }
-    .hero-key svg { width: 1.15em; height: 1.15em; flex: none; }
-
-    .hero-time {
-      font-family: var(--display);
-      font-weight: 600;
-      font-size: clamp(3.1rem, 8vmin, 7rem);
-      line-height: 0.84;
-      letter-spacing: 0.03em;
-      color: var(--amber);
-      text-shadow: 0 0 30px var(--amber-glow);
-      font-variant-numeric: tabular-nums;
-    }
-    .hero-route {
-      margin-top: clamp(4px, 0.8vmin, 9px);
-      font-weight: 700;
-      font-size: clamp(0.92rem, 1.85vmin, 1.45rem);
-    }
-    .hero-copy {
-      margin: clamp(4px, 0.7vmin, 8px) 0 0;
-      color: var(--ink-dim);
-      font-size: clamp(0.7rem, 1.32vmin, 1rem);
-      line-height: 1.55;
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3;
-      overflow: hidden;
-    }
-
-    .hero-metrics {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: clamp(6px, 0.9vmin, 11px);
-    }
-    .metric {
-      padding: clamp(7px, 1.1vmin, 13px) clamp(9px, 1.1vw, 14px);
-      border-radius: 11px;
-      background: rgba(255, 255, 255, 0.035);
-      border: 1px solid var(--frame);
-    }
-    .metric span {
-      display: block;
-      color: var(--ink-faint);
-      font-size: clamp(0.58rem, 1.1vmin, 0.8rem);
-      font-weight: 700;
-      letter-spacing: 0.1em;
-    }
-    .metric strong {
-      display: block;
-      margin-top: clamp(3px, 0.6vmin, 7px);
-      font-family: var(--display);
-      font-weight: 600;
-      font-size: clamp(1.05rem, 2.3vmin, 1.85rem);
-      line-height: 1;
-      letter-spacing: 0.03em;
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* board head row */
-    .board-head {
-      display: grid;
-      grid-template-columns: var(--board-cols);
-      gap: clamp(6px, 0.8vw, 12px);
-      margin: 0 clamp(8px, 1vmin, 14px);
-      padding: clamp(5px, 0.8vmin, 10px) clamp(10px, 1.1vw, 16px);
-      border-radius: 9px;
-      background: rgba(255, 255, 255, 0.045);
-      color: var(--ink-faint);
-      font-size: clamp(0.58rem, 1.05vmin, 0.82rem);
-      font-weight: 700;
-      letter-spacing: 0.13em;
-    }
-
-    /* rows */
-    .board-rows {
-      display: grid;
-      gap: clamp(5px, 0.7vmin, 9px);
-      align-content: start;
-      margin: clamp(6px, 0.8vmin, 10px) clamp(8px, 1vmin, 14px) clamp(8px, 1vmin, 14px);
-      overflow: auto;
-      overscroll-behavior: contain;
-      scrollbar-width: thin;
-      scrollbar-color: var(--amber) rgba(255, 255, 255, 0.05);
-    }
-    .board-rows::-webkit-scrollbar { width: 8px; }
-    .board-rows::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 999px; }
-    .board-rows::-webkit-scrollbar-thumb { background: rgba(255, 178, 46, 0.4); border-radius: 999px; }
-
-    .board-row {
-      display: grid;
-      grid-template-columns: var(--board-cols);
-      gap: clamp(6px, 0.8vw, 12px);
-      align-items: center;
-      padding: clamp(7px, 1.05vmin, 13px) clamp(10px, 1.1vw, 16px);
-      border-radius: 10px;
-      border: 1px solid var(--frame);
-      background:
-        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 3px),
-        rgba(255, 255, 255, 0.018);
-      position: relative;
-    }
-    .board-row.featured {
-      border-color: rgba(255, 178, 46, 0.4);
-      background:
-        linear-gradient(100deg, rgba(255, 178, 46, 0.16), transparent 60%),
-        rgba(255, 178, 46, 0.04);
-      box-shadow: inset 3px 0 0 var(--amber);
-    }
-    .board-row.unreachable { opacity: 0.46; }
-
-    .led-time strong,
-    .board-metric strong,
-    .board-slack strong {
-      display: block;
-      font-family: var(--display);
-      font-weight: 600;
-      line-height: 1;
-      letter-spacing: 0.03em;
-      font-variant-numeric: tabular-nums;
-    }
-    .led-time strong {
-      font-size: clamp(1.55rem, 3.4vmin, 3rem);
-      color: var(--amber);
-      text-shadow: 0 0 16px var(--amber-glow);
-    }
-    .led-time span,
-    .board-service small,
-    .board-stop span,
-    .board-destination span,
-    .board-metric span,
-    .board-slack span {
-      display: block;
-      margin-top: clamp(2px, 0.5vmin, 5px);
-      color: var(--ink-faint);
-      font-size: clamp(0.6rem, 1.1vmin, 0.85rem);
-      line-height: 1.4;
-    }
-
-    .service-chip {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: clamp(2.8rem, 4.6vw, 4.4rem);
-      padding: clamp(3px, 0.6vmin, 7px) clamp(6px, 0.8vw, 11px);
-      border-radius: 7px;
-      font-family: var(--display);
-      font-weight: 700;
-      letter-spacing: 0.07em;
-      font-size: clamp(0.86rem, 1.7vmin, 1.3rem);
-      color: #07100c;
-    }
-    .service-chip.jr  { background: linear-gradient(180deg, #19d27e, var(--jr)); }
-    .service-chip.bus { background: linear-gradient(180deg, #ff9b66, var(--bus)); }
-    .service-chip.alt { background: linear-gradient(180deg, #45d39a, #11a98e); }
-    .board-service small { letter-spacing: 0.1em; }
-
-    .board-stop strong,
-    .board-destination strong {
-      display: block;
-      font-weight: 700;
-      font-size: clamp(0.82rem, 1.55vmin, 1.22rem);
-      line-height: 1.32;
-    }
-    .board-metric strong { font-size: clamp(0.98rem, 2vmin, 1.55rem); color: var(--ink); }
-    .board-slack strong  { font-size: clamp(1rem, 2.05vmin, 1.6rem); }
-    .board-slack strong.good { color: var(--ok); }
-    .board-slack strong.warn { color: var(--notice); }
-    .board-slack strong.bad  { color: var(--bad); }
-
-    /* ---------- side column ---------- */
-    .side {
-      display: grid;
-      grid-template-rows: auto auto minmax(0, 1fr);
-      gap: clamp(8px, 1vmin, 14px);
-      min-height: 0;
-    }
-    .side .panel { display: flex; flex-direction: column; }
-    .side .panel-body {
-      padding: clamp(8px, 1.1vmin, 14px);
-      display: grid;
-      gap: clamp(6px, 0.9vmin, 11px);
-      flex: 1;
-      min-height: 0;
-    }
-    .side .panel:last-child .panel-body { overflow: auto; align-content: start; }
-
-    /* operation status */
-    .op-row {
-      display: grid;
-      grid-template-columns: clamp(8px, 0.9vw, 12px) 1fr;
-      gap: clamp(8px, 1vw, 14px);
-      padding: clamp(8px, 1.1vmin, 13px);
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--frame);
-    }
-    .op-bar { border-radius: 5px; }
-    .op-bar.jr  { background: linear-gradient(180deg, #19d27e, var(--jr)); }
-    .op-bar.bus { background: linear-gradient(180deg, #ff9b66, var(--bus)); }
-    .op-bar.cal { background: linear-gradient(180deg, #7fb4ff, #3b7bd1); }
-    .op-top {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .op-top b { font-size: clamp(0.82rem, 1.55vmin, 1.18rem); font-weight: 700; }
-    .op-row p {
-      margin: clamp(4px, 0.7vmin, 8px) 0 0;
-      color: var(--ink-dim);
-      font-size: clamp(0.66rem, 1.22vmin, 0.94rem);
-      line-height: 1.55;
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3;
-      overflow: hidden;
-    }
-
-    /* walk times */
-    .walk-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: clamp(7px, 1vmin, 12px) clamp(10px, 1.1vw, 15px);
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--frame);
-    }
-    .walk-row span { font-size: clamp(0.74rem, 1.4vmin, 1.05rem); font-weight: 700; }
-    .walk-row span small {
-      display: block;
-      font-weight: 400;
-      color: var(--ink-faint);
-      font-size: 0.78em;
-      letter-spacing: 0.06em;
-    }
-    .walk-row strong {
-      font-family: var(--display);
-      font-weight: 600;
-      font-size: clamp(1.1rem, 2.3vmin, 1.85rem);
-      color: var(--amber);
-      letter-spacing: 0.03em;
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* up-next mini board */
-    .mini-route {
-      padding: clamp(7px, 1vmin, 12px) clamp(10px, 1.1vw, 14px);
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--frame);
-    }
-    .mini-route strong { display: block; font-size: clamp(0.78rem, 1.45vmin, 1.08rem); font-weight: 700; }
-    .mini-route p {
-      margin: 3px 0 0;
-      color: var(--ink-faint);
-      font-size: clamp(0.62rem, 1.15vmin, 0.86rem);
-      line-height: 1.4;
-    }
-    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: clamp(5px, 0.8vmin, 9px); }
-    .time-chip {
-      font-family: var(--display);
-      font-weight: 500;
-      font-size: clamp(0.78rem, 1.5vmin, 1.12rem);
-      letter-spacing: 0.04em;
-      padding: clamp(2px, 0.5vmin, 5px) clamp(7px, 0.9vw, 11px);
-      border-radius: 999px;
-      border: 1px solid var(--frame-2);
-      background: rgba(255, 255, 255, 0.04);
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* ---------- ticker ---------- */
-    .ticker {
-      display: flex;
-      align-items: center;
-      gap: clamp(8px, 1vw, 16px);
-      padding: clamp(6px, 0.9vmin, 12px) clamp(10px, 1.3vw, 18px);
-      border: 1px solid var(--frame);
-      border-radius: 13px;
-      background:
-        linear-gradient(90deg, var(--jr-soft), transparent 22%),
-        var(--panel);
-      overflow: hidden;
-    }
-    .ticker-label {
-      flex: none;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-family: var(--display);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      font-size: clamp(0.62rem, 1.15vmin, 0.88rem);
-      color: var(--jr);
-    }
-    .ticker-label::before {
-      content: "";
-      width: 0.6em; height: 0.6em;
-      border-radius: 50%;
-      background: var(--jr);
-      box-shadow: 0 0 9px var(--jr);
-      animation: blink 1.6s steps(1) infinite;
-    }
-    @keyframes blink { 50% { opacity: 0.25; } }
-    .ticker-window { flex: 1; overflow: hidden; }
-    #tickerText {
-      display: inline-block;
-      white-space: nowrap;
-      padding-left: 100%;
-      font-size: clamp(0.78rem, 1.5vmin, 1.18rem);
-      font-weight: 700;
-      color: var(--ink);
-      animation: marquee 42s linear infinite;
-    }
-    @keyframes marquee { to { transform: translateX(-100%); } }
-
-    /* ---------- responsive: portrait / small ---------- */
-    @media (max-width: 1040px), (orientation: portrait) {
-      body { overflow: auto; }
-      .signage { height: auto; min-height: 100dvh; animation: none; }
-      .head { grid-template-columns: 1fr; }
-      .main { grid-template-columns: 1fr; }
-      .board { grid-template-rows: auto auto auto auto; }
-      .hero { grid-template-columns: 1fr; }
-      .board-rows { overflow: visible; }
-      .side .panel:last-child .panel-body { overflow: visible; }
-    }
-    @media (max-width: 720px) {
-      .board-head { display: none; }
-      .board-row { grid-template-columns: auto 1fr; row-gap: 6px; }
-      .board-row > .board-destination { grid-column: 1 / -1; }
-      .board-row > .board-metric,
-      .board-row > .board-slack { grid-column: span 1; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .signage { animation: none; }
-      #tickerText { animation: none; padding-left: 0; }
-      .ticker-label::before { animation: none; }
-    }
-  </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Shippori+Mincho:wght@400;500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/roulette.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23090910'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23d8b25f' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='16' r='3.2' fill='%23d8b25f'/%3E%3C/svg%3E">
 </head>
 <body>
-  <main class="signage">
+<a class="skip-link" href="#stage">本文へスキップ</a>
 
-    <!-- ===== header ===== -->
-    <header class="head">
-      <section class="identity">
-        <div class="jr-mark" aria-hidden="true"></div>
-        <div>
-          <h1>新潟大学 情報理工棟 ／ 新潟方面 発車案内</h1>
-          <p class="sub">JR越後線 ・ 新潟交通バス ／ 情報理工棟から出発する次便のご案内
-            <span class="en">Niigata Univ. — Departure Guide for Niigata</span>
-          </p>
-        </div>
-      </section>
+<div class="bg-layer" aria-hidden="true">
+  <span class="bg-glow bg-glow--a"></span>
+  <span class="bg-glow bg-glow--b"></span>
+  <span class="bg-grain"></span>
+</div>
 
-      <aside class="clock" aria-live="polite">
-        <strong class="time" id="liveClock">--:--</strong>
-        <span class="date" id="liveDate">----年--月--日</span>
-        <div class="pill-row">
-          <span class="pill normal"  id="calendarBadge">ダイヤ判定中</span>
-          <span class="pill unknown" id="jrBadge">JR 取得前</span>
-          <span class="pill unknown" id="busBadge">BUS 取得前</span>
-        </div>
-      </aside>
-    </header>
+<header class="masthead">
+  <div class="wrap">
+    <p class="masthead__eyebrow">JAPAN &nbsp;·&nbsp; 9 BRANDS &nbsp;·&nbsp; <span id="totalCount">36</span> PROPERTIES</p>
+    <h1 class="masthead__title">
+      <span class="masthead__title-en">Hilton Roulette</span>
+      <span class="masthead__rule" aria-hidden="true"><i></i><b>&#10022;</b><i></i></span>
+      <span class="masthead__title-ja">今夜の一泊を、運命に委ねる。</span>
+    </h1>
+    <p class="masthead__lead">
+      日本国内のヒルトン系列ホテルから、<em>地方</em>・<em>ブランド</em>・<em>運営元</em>で対象を絞り込み、ルーレットで行き先を決めます。
+    </p>
+  </div>
+</header>
 
-    <!-- ===== main ===== -->
-    <div class="main">
+<main class="wrap">
 
-      <!-- left : departure board -->
-      <section class="panel board">
-        <div class="panel-head">
-          <div class="panel-title">
-            <b>発車案内</b><em>Departure</em>
-          </div>
-          <span class="fetched" id="fetchedAt">取得待ち</span>
-        </div>
-
-        <article class="hero">
-          <div>
-            <div class="hero-key">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
-                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M5 12h14M13 6l6 6-6 6"/>
-              </svg>
-              次に出るならコレ
-              <span class="pill signal-green" id="statusPill">判定中</span>
-            </div>
-            <div class="hero-time" id="mainJudgement">--:--</div>
-            <div class="hero-route" id="bestRoute">経路を計算しています</div>
-            <p class="hero-copy" id="mainCopy">徒歩時間と出発リミットを計算しています。</p>
-          </div>
-          <div class="hero-metrics">
-            <div class="metric"><span>発車時刻</span><strong id="bestDepart">--:--</strong></div>
-            <div class="metric"><span>出発リミット</span><strong id="leaveBy">--:--</strong></div>
-            <div class="metric"><span>到着目安</span><strong id="arriveAt">--:--</strong></div>
-            <div class="metric"><span>経路</span><strong id="bestDescriptor">--</strong></div>
-          </div>
-        </article>
-
-        <div class="board-head">
-          <div>発車</div>
-          <div>種別</div>
-          <div>のりば</div>
-          <div>行先</div>
-          <div>徒歩</div>
-          <div>出発目安</div>
-          <div>余裕</div>
-        </div>
-        <div class="board-rows" id="departuresBody"></div>
-      </section>
-
-      <!-- right : side info -->
-      <aside class="side">
-        <!-- operation -->
-        <section class="panel">
-          <div class="panel-head">
-            <div class="panel-title"><b>運行情報</b><em>Operation</em></div>
-          </div>
-          <div class="panel-body">
-            <div class="op-row">
-              <div class="op-bar jr"></div>
-              <div>
-                <div class="op-top">
-                  <b>JR越後線</b>
-                  <span class="pill unknown" id="jrStatusBadge">取得前</span>
-                </div>
-                <p id="jrStatus">自動取得した JR東日本の運行情報を表示します。</p>
-              </div>
-            </div>
-            <div class="op-row">
-              <div class="op-bar bus"></div>
-              <div>
-                <div class="op-top">
-                  <b>新潟交通バス</b>
-                  <span class="pill unknown" id="busStatusBadge">取得前</span>
-                </div>
-                <p id="busStatus">自動取得した新潟交通の運行情報を表示します。</p>
-              </div>
-            </div>
-            <div class="op-row">
-              <div class="op-bar cal"></div>
-              <div>
-                <div class="op-top">
-                  <b>本日のダイヤ</b>
-                  <span class="pill normal" id="calendarStatusBadge">判定中</span>
-                </div>
-                <p id="calendarStatus">曜日と祝日から平日／土曜・休日を自動判定します。</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- walk times -->
-        <section class="panel">
-          <div class="panel-head">
-            <div class="panel-title"><b>情報理工棟からの徒歩</b><em>Walk</em></div>
-          </div>
-          <div class="panel-body">
-            <div class="walk-row">
-              <span>新大西門<small>新潟交通 バス停</small></span>
-              <strong id="walkBusDisplay">5分</strong>
-            </div>
-            <div class="walk-row">
-              <span>新潟大学前駅<small>JR越後線</small></span>
-              <strong id="walkUnivDisplay">20分</strong>
-            </div>
-            <div class="walk-row">
-              <span>内野駅<small>JR越後線</small></span>
-              <strong id="walkUchinoDisplay">15分</strong>
-            </div>
-          </div>
-        </section>
-
-        <!-- up next -->
-        <section class="panel">
-          <div class="panel-head">
-            <div class="panel-title"><b>この後の発車</b><em>Up Next</em></div>
-          </div>
-          <div class="panel-body" id="miniBoard"></div>
-        </section>
-      </aside>
+  <!-- ============ Filters ============ -->
+  <section class="panel" aria-labelledby="filters-h">
+    <div class="panel__head">
+      <h2 class="panel__title" id="filters-h">ルーレット対象を選ぶ</h2>
+      <button type="button" class="ghost-btn" id="resetBtn">条件をリセット</button>
     </div>
 
-    <!-- ===== ticker ===== -->
-    <footer class="ticker" aria-live="polite">
-      <span class="ticker-label">Service Info</span>
-      <div class="ticker-window">
-        <span id="tickerText">運行情報を読み込み中です。</span>
-      </div>
-    </footer>
-  </main>
+    <div class="filters">
+      <fieldset class="fset">
+        <legend class="fset__legend">地方</legend>
+        <div class="chips" id="regionChips"></div>
+      </fieldset>
 
-  <script>
-    "use strict";
+      <fieldset class="fset">
+        <legend class="fset__legend">ブランド</legend>
+        <div class="chips" id="brandChips"></div>
+      </fieldset>
 
-    /* ============================================================
-       設定・時刻表データ（情報理工棟 → 新潟方面）
-       ※ この部分は元アプリのまま。実ダイヤに合わせて編集可能。
-       ============================================================ */
-    const MINUTES_IN_DAY = 24 * 60;
+      <fieldset class="fset">
+        <legend class="fset__legend">運営元</legend>
+        <div class="chips" id="operatorChips"></div>
+        <p class="fset__note">「ヒルトン直営」以外はフランチャイズ運営。運営会社は公開情報にもとづく参考値です。</p>
+      </fieldset>
 
-    const kioskConfig = {
-      buffer: 3,
-      walks: { bus: 5, univ: 20, uchino: 15 }
-    };
-
-    const schedules = {
-      weekday: {
-        uchino: [
-          "05:26", "06:06", "06:35", "07:06", "07:25", "07:45", "07:54",
-          "08:08", "08:21", "08:51", "09:09", "09:30", "09:48", "10:11",
-          "10:31", "10:51", "11:11", "11:31", "11:51", "12:11", "12:31",
-          "12:51", "13:11", "13:31", "13:51", "14:11", "14:31", "14:51",
-          "15:11", "15:26", "15:50", "16:07", "16:28", "16:55", "17:10",
-          "17:31", "17:52", "18:10", "18:35", "18:53", "19:12", "19:35",
-          "19:54", "20:30", "20:52", "21:12", "21:32", "21:50", "22:10",
-          "22:31", "22:54"
-        ],
-        univ: [
-          "05:30", "06:09", "06:38", "07:09", "07:29", "07:48", "07:57",
-          "08:12", "08:24", "08:54", "09:13", "09:33", "09:52", "10:15",
-          "10:35", "10:55", "11:15", "11:35", "11:55", "12:15", "12:34",
-          "12:55", "13:14", "13:35", "13:55", "14:14", "14:35", "14:55",
-          "15:15", "15:30", "15:53", "16:11", "16:32", "16:58", "17:14",
-          "17:35", "17:55", "18:14", "18:38", "18:56", "19:15", "19:39",
-          "19:57", "20:33", "20:55", "21:15", "21:36", "21:53", "22:13",
-          "22:34", "22:58", "23:14"
-        ],
-        bus: [
-          "05:54", "06:30", "06:51", "07:03", "07:20", "07:40", "07:56",
-          "08:16", "08:24", "08:33", "09:00", "09:20", "09:30", "09:50",
-          "10:10", "10:25", "11:00", "11:10", "11:30", "12:01", "12:11",
-          "12:21", "12:36", "12:51", "13:16", "13:41", "14:11", "14:41",
-          "15:11", "15:46", "16:00", "16:20", "16:30", "16:40", "17:10",
-          "17:50", "18:20", "18:35", "18:58", "19:23", "19:58", "20:38",
-          "21:25", "21:50", "22:17", "22:44"
-        ]
-      }
-    };
-    schedules.saturday = schedules.weekday;
-
-    const routes = [
-      {
-        id: "bus", stop: "新大西門", routeLabel: "W21 西小針線",
-        destination: "古町・万代シティ経由 新潟駅", vehicle: "バス", duration: 41,
-        tag: "BUS", serviceClass: "bus", lane: "停留所", shortLine: "Niigata Kotsu"
-      },
-      {
-        id: "univ", stop: "新潟大学前駅", routeLabel: "JR越後線",
-        destination: "白山・新潟方面", vehicle: "電車", duration: 22,
-        tag: "JR", serviceClass: "jr", lane: "1番線", shortLine: "Echigo Line"
-      },
-      {
-        id: "uchino", stop: "内野駅", routeLabel: "JR越後線",
-        destination: "白山・新潟方面", vehicle: "電車", duration: 25,
-        tag: "JR", serviceClass: "alt", lane: "1番線", shortLine: "Echigo Line"
-      }
-    ];
-
-    const state = {
-      liveStatus: null,
-      dayType: localDayType(),
-      buffer: kioskConfig.buffer,
-      walks: { ...kioskConfig.walks }
-    };
-
-    const $ = (id) => document.getElementById(id);
-    const pad2 = (n) => String(n).padStart(2, "0");
-
-    /* ============================================================
-       時刻計算ユーティリティ
-       ============================================================ */
-    function toMinutes(time) {
-      const [hour, minute] = time.split(":").map(Number);
-      return hour * 60 + minute;
-    }
-
-    function formatMinutes(total) {
-      const normalized = ((total % MINUTES_IN_DAY) + MINUTES_IN_DAY) % MINUTES_IN_DAY;
-      return `${pad2(Math.floor(normalized / 60))}:${pad2(normalized % 60)}`;
-    }
-
-    function getNowMinutes() {
-      const now = new Date();
-      return now.getHours() * 60 + now.getMinutes();
-    }
-
-    function nextTimes(times, nowMinutes, count = 4) {
-      const expanded = times
-        .map((time) => toMinutes(time))
-        .concat(times.map((time) => toMinutes(time) + MINUTES_IN_DAY));
-      return expanded.filter((time) => time >= nowMinutes).slice(0, count);
-    }
-
-    function evaluateSlack(slack) {
-      if (slack < 0) {
-        return { label: "見送り", tone: "red", copy: "今から歩くと間に合わない計算です。" };
-      }
-      if (slack <= 3) {
-        return { label: "全力", tone: "red", copy: "ほぼ即出発。寄り道はできません。" };
-      }
-      if (slack <= 7) {
-        return { label: "急ぎ", tone: "amber", copy: "早歩きで向かう想定です。" };
-      }
-      if (slack <= 12) {
-        return { label: "早歩き", tone: "blue", copy: "少し急げば乗りやすい候補です。" };
-      }
-      return { label: "余裕あり", tone: "green", copy: "通常歩行でも間に合いやすい候補です。" };
-    }
-
-    function toneToPillClass(tone) {
-      return { green: "signal-green", blue: "signal-blue", amber: "signal-amber", red: "signal-red" }[tone];
-    }
-
-    function slackLabel(slack) {
-      return slack < 0 ? `${Math.abs(slack)}分不足` : `残り${slack}分`;
-    }
-
-    function slackClass(slack) {
-      if (slack < 0) return "bad";
-      if (slack <= 7) return "warn";
-      return "good";
-    }
-
-    function summarizeStatus(message, limit = 150) {
-      if (!message) return "取得できませんでした。";
-      const compact = message.replace(/\s+/g, " ").trim();
-      return compact.length > limit ? `${compact.slice(0, limit).trim()}…` : compact;
-    }
-
-    function boardRowLimit() {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      if (w >= 1700 && h >= 900) return 9;
-      if (w >= 1400 && h >= 820) return 8;
-      if (w >= 1280 && h >= 760) return 7;
-      if (w >= 1024 && h >= 700) return 6;
-      if (w >= 760  && h >= 900) return 6;
-      return 5;
-    }
-
-    const rowKey = (row) => `${row.id}-${row.departure}`;
-
-    function selectBoardRows(rows, limit) {
-      const selected = [];
-      const seen = new Set();
-      const reachable = rows.filter((row) => row.slack >= 0);
-      const openingCount = limit >= 6 ? 2 : 1;
-      const reachableQuota = Math.min(reachable.length, Math.max(1, limit - openingCount));
-
-      const pushRow = (row) => {
-        const key = rowKey(row);
-        if (seen.has(key) || selected.length >= limit) return;
-        seen.add(key);
-        selected.push(row);
-      };
-
-      rows.slice(0, openingCount).forEach(pushRow);
-      reachable.slice(0, reachableQuota).forEach(pushRow);
-      rows.forEach(pushRow);
-
-      return selected
-        .slice(0, limit)
-        .sort((a, b) => a.departure - b.departure || a.slack - b.slack);
-    }
-
-    function routeSummary(route) {
-      return `${route.stop}まで徒歩${route.walking}分、乗車前バッファ${route.buffer}分込みで、`
-        + `${formatMinutes(route.leave)}までに出れば ${formatMinutes(route.departure)} 発を狙えます。`;
-    }
-
-    function routeCalculations() {
-      const nowMinutes = getNowMinutes();
-      const dayType = state.dayType;
-      const buffer = state.buffer;
-
-      return routes.map((route) => {
-        const walking = state.walks[route.id];
-        const upcoming = nextTimes(schedules[dayType][route.id], nowMinutes, 4);
-        const departure = upcoming[0];
-        const leave = departure - walking - buffer;
-        const slack = leave - nowMinutes;
-        return {
-          ...route, walking, buffer, upcoming, departure, leave, slack,
-          arrival: departure + route.duration,
-          judgement: evaluateSlack(slack)
-        };
-      });
-    }
-
-    function buildDepartureRows(calculations) {
-      const nowMinutes = getNowMinutes();
-      return calculations
-        .flatMap((route) =>
-          route.upcoming.map((departure) => {
-            const leave = departure - route.walking - route.buffer;
-            const slack = leave - nowMinutes;
-            return {
-              ...route, departure, leave, slack,
-              arrival: departure + route.duration,
-              judgement: evaluateSlack(slack)
-            };
-          })
-        )
-        .sort((a, b) => a.departure - b.departure);
-    }
-
-    /* ============================================================
-       描画
-       ============================================================ */
-    function syncWalkDisplays() {
-      $("walkBusDisplay").textContent = `${state.walks.bus}分`;
-      $("walkUnivDisplay").textContent = `${state.walks.univ}分`;
-      $("walkUchinoDisplay").textContent = `${state.walks.uchino}分`;
-    }
-
-    function currentLiveWarning() {
-      if (!state.liveStatus) return "";
-      const warnings = [];
-      if (["delay", "disrupted", "notice", "unknown"].includes(state.liveStatus.jr?.severity)) {
-        warnings.push(`JRは${state.liveStatus.jr.status}`);
-      }
-      if (["delay", "disrupted", "notice", "unknown"].includes(state.liveStatus.bus?.severity)) {
-        warnings.push(`バスは${state.liveStatus.bus.status}`);
-      }
-      return warnings.length
-        ? ` 最新情報では ${warnings.join("、")} のため、現地の表示もご確認ください。`
-        : "";
-    }
-
-    function renderHero(best) {
-      $("statusPill").textContent = best.judgement.label;
-      $("statusPill").className = `pill ${toneToPillClass(best.judgement.tone)}`;
-      $("mainJudgement").textContent = formatMinutes(best.departure);
-      $("bestRoute").textContent = `${best.stop} ／ ${best.destination}`;
-      $("mainCopy").textContent = `${routeSummary(best)} ${best.judgement.copy}${currentLiveWarning()}`;
-      $("bestDepart").textContent = formatMinutes(best.departure);
-      $("leaveBy").textContent = formatMinutes(best.leave);
-      $("arriveAt").textContent = formatMinutes(best.arrival);
-      $("bestDescriptor").textContent = `${best.tag} ${best.routeLabel}`;
-    }
-
-    function renderDepartureBoard(rows, best) {
-      const nowMinutes = getNowMinutes();
-      const displayRows = selectBoardRows(rows, boardRowLimit());
-      $("departuresBody").innerHTML = displayRows.map((row) => {
-        const featured = row.id === best.id && row.departure === best.departure;
-        const unreachable = row.slack < 0;
-        return `
-          <article class="board-row ${featured ? "featured" : ""} ${unreachable ? "unreachable" : ""}">
-            <div class="led-time">
-              <strong>${formatMinutes(row.departure)}</strong>
-              <span>${row.departure - nowMinutes}分後</span>
-            </div>
-            <div class="board-service">
-              <span class="service-chip ${row.serviceClass}">${row.tag}</span>
-              <small>${row.shortLine}</small>
-            </div>
-            <div class="board-stop">
-              <strong>${row.stop}</strong>
-              <span>${row.lane} ／ ${row.routeLabel}</span>
-            </div>
-            <div class="board-destination">
-              <strong>${row.destination}</strong>
-              <span>${row.vehicle} ／ 到着目安 ${formatMinutes(row.arrival)}</span>
-            </div>
-            <div class="board-metric board-walk">
-              <strong>${row.walking}分</strong>
-              <span>情報理工棟から</span>
-            </div>
-            <div class="board-metric board-leave">
-              <strong>${formatMinutes(row.leave)}</strong>
-              <span>出発目安</span>
-            </div>
-            <div class="board-slack">
-              <strong class="${slackClass(row.slack)}">${slackLabel(row.slack)}</strong>
-              <span>${row.judgement.label}</span>
-            </div>
-          </article>
-        `;
-      }).join("");
-    }
-
-    function renderMiniBoard(calculations) {
-      $("miniBoard").innerHTML = calculations.map((route) => `
-        <article class="mini-route">
-          <strong>${route.stop}</strong>
-          <p>${route.routeLabel} ／ ${route.destination}</p>
-          <div class="chip-row">
-            ${route.upcoming.slice(0, 3).map((t) => `<span class="time-chip">${formatMinutes(t)}</span>`).join("")}
+      <fieldset class="fset fset--split">
+        <div>
+          <legend class="fset__legend">タイプ</legend>
+          <div class="chips" id="typeChips"></div>
+        </div>
+        <div>
+          <legend class="fset__legend">オプション</legend>
+          <div class="chips" id="optionChips">
+            <label class="chip chip--toggle">
+              <input type="checkbox" id="includeUpcoming">
+              <span>開業予定も含める</span>
+            </label>
+            <label class="chip chip--toggle">
+              <input type="checkbox" id="soundOn">
+              <span>効果音</span>
+            </label>
           </div>
-        </article>
-      `).join("");
-    }
+        </div>
+      </fieldset>
+    </div>
 
-    function renderTicker(rows, best) {
-      const headline = rows
-        .slice(0, 6)
-        .map((row) => `${formatMinutes(row.departure)} ${row.stop}→${row.destination}（${slackLabel(row.slack)}）`);
-      const service = [];
-      if (state.liveStatus?.jr?.status)  service.push(`JR越後線 ${state.liveStatus.jr.status}`);
-      if (state.liveStatus?.bus?.status) service.push(`新潟交通 ${state.liveStatus.bus.status}`);
-      service.push(`次発推奨 ${formatMinutes(best.departure)} ${best.stop}`);
-      const notes = state.liveStatus?.notes?.length ? state.liveStatus.notes : [];
-      $("tickerText").textContent =
-        `${headline.join("　／　")}　／　${service.join("　／　")}` +
-        (notes.length ? `　／　${notes.join("　／　")}` : "");
-    }
+    <div class="tally">
+      <p class="tally__main">対象 <strong id="matchCount">36</strong> 軒</p>
+      <p class="tally__sub" id="excludedNote" hidden>
+        除外中 <strong id="excludedCount">0</strong> 軒
+        <button type="button" class="link-btn" id="clearExcluded">除外を解除</button>
+      </p>
+    </div>
+  </section>
 
-    function render() {
-      syncWalkDisplays();
-      const calculations = routeCalculations();
-      const rows = buildDepartureRows(calculations);
-      const best = rows.find((row) => row.slack >= 0) || rows[0];
-      renderHero(best);
-      renderDepartureBoard(rows, best);
-      renderMiniBoard(calculations);
-      renderTicker(rows, best);
-    }
+  <!-- ============ Wheel ============ -->
+  <section class="stage" id="stage" aria-labelledby="stage-h">
+    <h2 class="visually-hidden" id="stage-h">ルーレット</h2>
 
-    function setPill(id, text, severity = "normal") {
-      const pill = $(id);
-      if (!pill) return;
-      pill.textContent = text;
-      pill.className = `pill ${severity}`;
-    }
+    <div class="wheel-shell">
+      <div class="wheel-frame">
+        <canvas id="wheel" width="640" height="640" role="img" aria-label="ホテル抽選ルーレット"></canvas>
+        <div class="wheel-pointer" aria-hidden="true"></div>
+        <button type="button" class="hub" id="spinBtn">
+          <span class="hub__ring" aria-hidden="true"></span>
+          <span class="hub__label">SPIN</span>
+          <span class="hub__sub">回す</span>
+        </button>
+      </div>
+      <p class="wheel-empty" id="wheelEmpty" hidden>条件に合うホテルがありません。<br>絞り込みをゆるめてください。</p>
+    </div>
+  </section>
 
-    /* ============================================================
-       カレンダー（祝日 API をブラウザから直接取得）
-       ============================================================ */
-    function localDayType() {
-      const day = new Date().getDay();
-      return (day === 0 || day === 6) ? "saturday" : "weekday";
-    }
+  <!-- ============ Result ============ -->
+  <section class="result-slot" aria-live="polite" aria-atomic="true">
+    <article class="ticket" id="ticket" hidden>
+      <div class="ticket__foil" aria-hidden="true"></div>
+      <header class="ticket__head">
+        <p class="ticket__tier" id="tTier">LUXURY</p>
+        <p class="ticket__brand" id="tBrand">コンラッド</p>
+      </header>
+      <h3 class="ticket__name" id="tName">—</h3>
+      <p class="ticket__place" id="tPlace">—</p>
 
-    function buildCalendar(holidays) {
-      const now = new Date();
-      const date = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
-      const weekday = now.getDay();
-      const holidayName = holidays ? holidays[date] : null;
-      const isHoliday = Boolean(holidayName);
-      const isWeekend = weekday === 0 || weekday === 6;
-      const dayType = (isHoliday || isWeekend) ? "saturday" : "weekday";
-      return {
-        date, weekday,
-        is_holiday: isHoliday,
-        holiday_name: holidayName,
-        day_type: dayType,
-        label: dayType === "weekday" ? "平日ダイヤ" : "土曜・休日ダイヤ"
-      };
-    }
+      <dl class="ticket__meta">
+        <div><dt>地方</dt><dd id="tRegion">—</dd></div>
+        <div><dt>タイプ</dt><dd id="tType">—</dd></div>
+        <div><dt>運営元</dt><dd id="tOperator">—</dd></div>
+      </dl>
 
-    function applyCalendar(calendar) {
-      const cal = calendar || buildCalendar(null);
-      state.dayType = cal.day_type;
-      setPill("calendarBadge", cal.label, "normal");
-      setPill("calendarStatusBadge", cal.label, "normal");
-      const holidayText = cal.holiday_name ? `（${cal.holiday_name}）` : "";
-      $("calendarStatus").textContent =
-        `${cal.date}${holidayText} は ${cal.label} として案内しています。`;
-    }
+      <div class="ticket__links">
+        <a class="mini-btn" id="tMap" href="#" target="_blank" rel="noopener">地図で見る</a>
+        <a class="mini-btn" id="tSearch" href="#" target="_blank" rel="noopener">公式情報を検索</a>
+      </div>
 
-    async function loadCalendar() {
-      try {
-        const res = await fetch("https://holidays-jp.github.io/api/v1/date.json", { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        applyCalendar(buildCalendar(await res.json()));
-      } catch (_) {
-        applyCalendar(buildCalendar(null));   // 取得失敗時は曜日のみで判定
-      }
-    }
+      <div class="ticket__share">
+        <p class="ticket__share-label">結果を送る</p>
+        <div class="share-row">
+          <a class="share-btn share-btn--line" id="shareLine" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2C6.5 2 2 5.7 2 10.2c0 4 3.6 7.4 8.4 8.1.3.07.8.22.9.5.1.26.07.66.03.92l-.14.87c-.04.26-.2 1.02.9.56 1.1-.46 5.9-3.48 8.05-5.95C21.6 13.5 22 11.9 22 10.2 22 5.7 17.5 2 12 2ZM8.1 12.9H6.05a.53.53 0 0 1-.53-.53V8.28c0-.29.24-.53.53-.53s.53.24.53.53v3.56H8.1c.3 0 .53.24.53.53s-.24.53-.53.53Zm2.08-.53c0 .29-.24.53-.53.53a.53.53 0 0 1-.53-.53V8.28c0-.29.24-.53.53-.53s.53.24.53.53v4.09Zm4.34 0c0 .23-.15.43-.36.5a.6.6 0 0 1-.17.03.53.53 0 0 1-.43-.21l-2.1-2.85v2.53c0 .29-.23.53-.53.53a.53.53 0 0 1-.52-.53V8.28c0-.23.14-.43.36-.5a.5.5 0 0 1 .17-.03c.16 0 .32.08.42.21l2.1 2.86V8.28c0-.29.24-.53.53-.53s.53.24.53.53v4.09Zm3.4-2.58c.3 0 .53.24.53.53s-.23.53-.53.53h-1.51v.97h1.51c.3 0 .53.24.53.53s-.23.53-.53.53h-2.04a.53.53 0 0 1-.53-.53V8.28c0-.29.24-.53.53-.53h2.04c.3 0 .53.24.53.53s-.23.53-.53.53h-1.51v.98h1.51Z"/></svg>
+            <span>LINEで送る</span>
+          </a>
+          <button type="button" class="share-btn" id="shareNative" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 15V3"/><path d="m8 7 4-4 4 4"/></svg>
+            <span>他のアプリで共有</span>
+          </button>
+          <button type="button" class="share-btn" id="shareCopy">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
+            <span>テキストをコピー</span>
+          </button>
+        </div>
+        <p class="share-status" id="shareStatus" role="status"></p>
+      </div>
 
-    /* ============================================================
-       運行情報（GitHub Actions が生成した静的 JSON を取得）
-       ============================================================ */
-    function renderLiveStatus(data) {
-      state.liveStatus = data;
-      setPill("jrBadge",  `JR ${data.jr?.status || "不明"}`,  data.jr?.severity  || "unknown");
-      setPill("busBadge", `BUS ${data.bus?.status || "不明"}`, data.bus?.severity || "unknown");
-      setPill("jrStatusBadge",  data.jr?.status  || "不明", data.jr?.severity  || "unknown");
-      setPill("busStatusBadge", data.bus?.status || "不明", data.bus?.severity || "unknown");
-      $("jrStatus").textContent =
-        `${summarizeStatus(data.jr?.message)}${data.jr?.updated_at ? `　／　公式更新 ${data.jr.updated_at}` : ""}`;
-      $("busStatus").textContent =
-        `${summarizeStatus(data.bus?.message)}${data.bus?.updated_at ? `　／　公式更新 ${data.bus.updated_at}` : ""}`;
-      if (data.fetched_at) {
-        const t = new Date(data.fetched_at);
-        $("fetchedAt").textContent =
-          `自動取得 ${t.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}`;
-      } else {
-        $("fetchedAt").textContent = "取得待ち";
-      }
-      render();
-    }
+      <footer class="ticket__foot">
+        <button type="button" class="ghost-btn" id="respinBtn">もう一度回す</button>
+        <button type="button" class="ghost-btn" id="excludeBtn">これを除外して回す</button>
+      </footer>
+    </article>
+  </section>
 
-    async function loadLiveStatus() {
-      try {
-        const res = await fetch(`./data/status.json?_=${Date.now()}`, { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        renderLiveStatus(await res.json());
-      } catch (_) {
-        // 取得に失敗しても発車案内は内蔵時刻表で動作させる
-        setPill("jrBadge",  "JR 取得失敗",  "unknown");
-        setPill("busBadge", "BUS 取得失敗", "unknown");
-        setPill("jrStatusBadge",  "取得失敗", "unknown");
-        setPill("busStatusBadge", "取得失敗", "unknown");
-        $("jrStatus").textContent  = "運行情報を取得できませんでした。発車案内は内蔵時刻表で表示しています。";
-        $("busStatus").textContent = "運行情報を取得できませんでした。";
-        $("fetchedAt").textContent = "取得失敗";
-        render();
-      }
-    }
+  <!-- ============ History ============ -->
+  <section class="panel panel--slim" id="historyPanel" hidden aria-labelledby="hist-h">
+    <div class="panel__head">
+      <h2 class="panel__title" id="hist-h">これまでの抽選</h2>
+      <button type="button" class="ghost-btn" id="clearHistory">履歴を消す</button>
+    </div>
+    <ol class="history" id="historyList"></ol>
+  </section>
 
-    /* ============================================================
-       時計
-       ============================================================ */
-    function updateClock() {
-      const now = new Date();
-      $("liveClock").textContent = now.toLocaleTimeString("ja-JP", {
-        hour: "2-digit", minute: "2-digit"
-      });
-      $("liveDate").textContent = now.toLocaleDateString("ja-JP", {
-        year: "numeric", month: "long", day: "numeric", weekday: "short"
-      });
-    }
+</main>
 
-    /* ============================================================
-       起動
-       ============================================================ */
-    updateClock();
-    render();
-    loadCalendar();
-    loadLiveStatus();
+<footer class="site-foot">
+  <div class="wrap">
+    <p class="site-foot__note">
+      掲載データは公開情報をもとに作成した非公式のものです。ブランド名・ホテル名は各権利者に帰属します。
+      最新の営業状況・料金は各ホテルの公式サイトでご確認ください。
+    </p>
+    <p class="site-foot__mark">HILTON ROULETTE</p>
+  </div>
+</footer>
 
-    setInterval(updateClock, 1000);          // 時計
-    setInterval(render, 30000);              // 発車案内の再計算
-    setInterval(loadLiveStatus, 180000);     // 運行情報 3分ごと
-    setInterval(loadCalendar, 1800000);      // ダイヤ判定 30分ごと
-    window.addEventListener("resize", render);
-  </script>
+<script src="./assets/data.js"></script>
+<script src="./assets/roulette.js"></script>
 </body>
 </html>
